@@ -6,7 +6,7 @@ namespace phos_music_converter
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine("Yo dayo, Phos Music Manager!");
         }
     }
 }
