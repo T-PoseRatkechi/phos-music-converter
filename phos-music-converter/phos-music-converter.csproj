@@ -17,4 +17,8 @@
     <Exec Command="if $(ConfigurationName) == Release robocopy $(OutDir) $(ProjectDir)..\release-build /s /e" />
   </Target>
 
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
+  </ItemGroup>
+
 </Project>
