@@ -12,8 +12,6 @@ namespace PhosMusicConverter.Common
     /// </summary>
     internal class ChecksumUtils
     {
-        private static string checksumDirectory = $@"{Directory.GetCurrentDirectory()}\checksums";
-
         /// <summary> Calculates and returns the MD5 hash of <paramref name="file"/>.</summary>
         /// <param name="file">Path of file to calculate hash for.</param>
         /// <returns>MD5 hash of <paramref name="file"/>.</returns>
@@ -35,10 +33,11 @@ namespace PhosMusicConverter.Common
         /// current checksum to file and returns <c>null</c>.
         /// </summary>
         /// <param name="file">File to get saved checksum of.</param>
+        /// <param name="checksumsDir">Directory of where to look for saved checksums.</param>
         /// <returns><c>byte[]</c> containing <paramref name="file"/>'s saved checksum, if it exists. Otherwise, returns <c>null</c>.</returns>
-        public static byte[] GetSavedChecksum(string file)
+        public static byte[] GetSavedChecksum(string file, string checksumsDir)
         {
-            string savedSumPath = $@"{checksumDirectory}\{Path.GetFileName(file)}.md5";
+            string savedSumPath = $@"{checksumsDir}\{Path.GetFileName(file)}.md5";
             if (!File.Exists(savedSumPath))
             {
                 byte[] fileSum = GetChecksum(file);

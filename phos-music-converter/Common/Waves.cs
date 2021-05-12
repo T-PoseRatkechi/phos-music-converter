@@ -98,7 +98,25 @@ namespace PhosMusicConverter.Common
                 };
             }
 
-            return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Calculates and returns the total number of samples of the given <paramref name="props"/>.
+        /// </summary>
+        /// <param name="props">The wave file's <c>WaveProps</c>.</param>
+        /// <returns>The total number of samples. Returns -1 if a <c>DivideByZeroException</c> occurs.</returns>
+        public static int GetTotalSamples(WaveProps props)
+        {
+            try
+            {
+                int totalSamples = props.SubchunkSize2 / props.NumChannels / (props.BitsPerSamples / 8);
+                return totalSamples;
+            }
+            catch (DivideByZeroException)
+            {
+                return -1;
+            }
         }
     }
 }

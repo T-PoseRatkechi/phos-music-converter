@@ -4,6 +4,7 @@
 namespace PhosMusicConverter
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using CommandLine;
     using PhosMusicConverter.Builders;
@@ -49,7 +50,12 @@ namespace PhosMusicConverter
                         return;
                 }
 
+                Stopwatch timer = new Stopwatch();
+                timer.Start();
                 musicBuilder.GenerateBuild(outputDir, useLow, verbose);
+                timer.Stop();
+
+                Console.WriteLine($"[INFO] Completed in {timer.ElapsedMilliseconds} ms.");
             }
             catch (FileNotFoundException ex)
             {

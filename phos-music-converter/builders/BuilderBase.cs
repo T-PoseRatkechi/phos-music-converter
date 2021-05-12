@@ -19,6 +19,9 @@ namespace PhosMusicConverter.Builders
         /// </summary>
         private readonly MusicData musicData;
 
+        /// <summary>
+        /// Verbose setting for errors.
+        /// </summary>
         private readonly bool isVerbose;
 
         /// <summary>
@@ -31,8 +34,17 @@ namespace PhosMusicConverter.Builders
         {
             this.isVerbose = verbose;
             this.musicData = MusicDataParser.ParseMusicData(musicDataPath);
+            if (!Directory.Exists(this.CachedDirectory))
+            {
+                Directory.CreateDirectory(this.CachedDirectory);
+            }
             Console.WriteLine($"{gameName} Music Builder");
         }
+
+        /// <summary>
+        /// Gets cache directory for game's Music Builds.
+        /// </summary>
+        protected abstract string CachedDirectory { get; }
 
         /// <inheritdoc/>
         public abstract void GenerateBuild(string outputDir, bool useLow, bool verbose);
@@ -56,7 +68,7 @@ namespace PhosMusicConverter.Builders
             try
             {
                 // get currently saved checksum of file
-                byte[] savedSum = ChecksumUtils.GetSavedChecksum(file);
+                byte[] savedSum = ChecksumUtils.GetSavedChecksum(file, this.CachedDirectory);
 
                 // file has no saved checksum so is new file
                 if (savedSum == null)
