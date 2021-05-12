@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace phos_music_converter.interfaces
+﻿namespace PhosMusicConverter.Interfaces
 {
-    interface IMusicBuilder
+    internal interface IMusicBuilder
     {
         void GenerateBuild(string outputDir, bool useLow, bool verbose);
     }

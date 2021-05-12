@@ -1,37 +1,21 @@
-﻿using System;
-using System.IO;
-using CommandLine;
-using phos_music_converter.builders;
-using phos_music_converter.interfaces;
-
-namespace phos_music_converter
+﻿namespace PhosMusicConverter
 {
-    class Program
+    using System;
+    using System.IO;
+    using CommandLine;
+    using PhosMusicConverter.Builders;
+    using PhosMusicConverter.Interfaces;
+
+    /// <summary>
+    /// Phos Music Converter Main Class.
+    /// </summary>
+    internal class Program
     {
-        public class Options
-        {
-            [Option('g', "game", Required = true,
-                HelpText = "Set what game to generate music build for. Options: p4g, p5, p3f, and p4.")]
-            public string GameName { get; set; }
-            [Option('i', "input", Required = true,
-                HelpText = "Input music data JSON.")]
-            public string MusicData { get; set; }
-            [Option('o', "output", Required = true,
-                HelpText = "Directory to generate music build in.")]
-            public string OutputDirectory { get; set; }
-
-            [Option('l', "low", Required = false, Default = false,
-                HelpText = "Set Phos Music Converter to use less resources. Only use if Phos Music Converter has issues building normally.")]
-            public bool UseLowPerformance { get; set; }
-            [Option('v', "verbose", Required = false, Default = false, HelpText = "Set output to verbose messages.")]
-            public bool Verbose { get; set; }
-        }
-
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("Yo dayo!");
-            Parser.Default.ParseArguments<Options>(args)
-                .WithParsed<Options>(o =>
+            Parser.Default.ParseArguments<CommandOptions>(args)
+                .WithParsed<CommandOptions>(o =>
                 {
                     GenerateMusicBuild(o.GameName, o.MusicData, o.OutputDirectory, o.UseLowPerformance, o.Verbose);
                 });
@@ -47,13 +31,16 @@ namespace phos_music_converter
                     case "p4g":
                         musicBuilder = new BuilderP4G(musicDataPath);
                         break;
+
                     case "p5":
                         musicBuilder = new BuilderP5(musicDataPath);
                         break;
+
                     case "p3f":
                     case "p4":
                         musicBuilder = new BuilderP3F(musicDataPath);
                         break;
+
                     default:
                         Console.WriteLine($"Unsupported game option: {game}!");
                         return;
@@ -71,6 +58,24 @@ namespace phos_music_converter
                 Console.WriteLine(ex.ToString());
                 Console.WriteLine("Failed to generate build!");
             }
+        }
+
+        private class CommandOptions
+        {
+            [Option('g', "game", Required = true, HelpText = "Set what game to generate music build for. Options: p4g, p5, p3f, and p4.")]
+            public string GameName { get; set; }
+
+            [Option('i', "input", Required = true, HelpText = "Input music data JSON.")]
+            public string MusicData { get; set; }
+
+            [Option('o', "output", Required = true, HelpText = "Directory to generate music build in.")]
+            public string OutputDirectory { get; set; }
+
+            [Option('l', "low", Required = false, Default = false, HelpText = "Set Phos Music Converter to use less resources. Only use if Phos Music Converter has issues building normally.")]
+            public bool UseLowPerformance { get; set; }
+
+            [Option('v', "verbose", Required = false, Default = false, HelpText = "Set output to verbose messages.")]
+            public bool Verbose { get; set; }
         }
     }
 }

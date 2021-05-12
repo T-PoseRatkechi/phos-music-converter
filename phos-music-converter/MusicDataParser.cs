@@ -6,14 +6,14 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace phos_music_converter
+namespace PhosMusicConverter
 {
-    struct MusicData
+    internal struct MusicData
     {
         public Song[] songs { get; set; }
     }
 
-    struct Song
+    internal struct Song
     {
         public string id { get; set; }
         public bool isEnabled { get; set; }
@@ -26,7 +26,7 @@ namespace phos_music_converter
         public string uwuIndex { get; set; }
     }
 
-    class MusicDataParser
+    internal class MusicDataParser
     {
         public static MusicData ParseMusicData(string musicDataPath)
         {
