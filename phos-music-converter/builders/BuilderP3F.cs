@@ -14,9 +14,9 @@ namespace PhosMusicConverter.Builders
         /// Initializes a new instance of the <see cref="BuilderP3F"/> class.
         /// </summary>
         /// <param name="path">Input music data JSON file.</param>
-        /// <param name="verbose">Verbose setting for errors.</param>
-        public BuilderP3F(string path)
-            : base(path, "Persona 3 FES/Persona 4")
+        /// <param name="encoder">Path to encoder.</param>
+        public BuilderP3F(string path, string encoder)
+            : base("Persona 3 FES/Persona 4", path, encoder)
         {
         }
 

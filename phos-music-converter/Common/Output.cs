@@ -28,7 +28,7 @@ namespace PhosMusicConverter.Common
         /// <summary>
         /// Messages that indicate non-breaking errors that are worked around automatically.
         /// </summary>
-        WARNING,
+        WARN,
 
         /// <summary>
         /// Messages that indicate errors which force the program to stop.
@@ -55,7 +55,7 @@ namespace PhosMusicConverter.Common
         {
             if (level != LogLevel.DEBUG || (level == LogLevel.DEBUG && Verbose))
             {
-                Console.WriteLine($"[{level}] {obj}");
+                Console.WriteLine($"[{level}] (Phos) {obj}");
             }
         }
     }

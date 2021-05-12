@@ -25,7 +25,7 @@ namespace PhosMusicConverter.Common
                 // Check RIFF header
                 if (!reader.ReadBytes(4).SequenceEqual(new byte[] { 0x52, 0x49, 0x46, 0x46 }))
                 {
-                    Console.WriteLine("Missing RIFF header!");
+                    Output.Log(LogLevel.ERROR, "Missing RIFF header!");
                     return false;
                 }
 
@@ -35,14 +35,14 @@ namespace PhosMusicConverter.Common
                 // Check WAVE format
                 if (!reader.ReadBytes(4).SequenceEqual(new byte[] { 0x57, 0x41, 0x56, 0x45 }))
                 {
-                    Console.WriteLine("Format not WAVE!");
+                    Output.Log(LogLevel.ERROR, "Format not WAVE!");
                     return false;
                 }
 
                 // Check "fmt " bytes
                 if (!reader.ReadBytes(4).SequenceEqual(new byte[] { 0x66, 0x6d, 0x74, 0x20 }))
                 {
-                    Console.WriteLine("Missing \"fmt \" bytes!");
+                    Output.Log(LogLevel.ERROR, "Missing \"fmt \" bytes!");
                     return false;
                 }
 

@@ -22,6 +22,9 @@ namespace PhosMusicConverter.Common
         /// <param name="endSample">The ending sample of the wave's loop.</param>
         public static void WriteTxthFile(string outputFilePath, WaveProps props, int totalSamples, int startSample, int endSample)
         {
+            // store txth name for logging
+            string txthName = Path.GetFileName(outputFilePath);
+
             // Get samples per block from first byte of extra params.
             byte samplesPerBlock = props.ExtraParamsBytes[0];
 
@@ -51,7 +54,7 @@ namespace PhosMusicConverter.Common
                 // verify loop points are valid
                 if (!IsValidLoop(totalSamples, finalStartSample, finalEndSample))
                 {
-                    Output.Log(LogLevel.WARNING, "Loop points were invalid! Defaulting to full song loop!");
+                    Output.Log(LogLevel.WARN, $"{txthName}: Loop points were invalid! Defaulting to full song loop!");
                     finalStartSample = 0;
                     finalEndSample = AlignToBlock(totalSamples, samplesPerBlock);
                 }
@@ -63,7 +66,7 @@ namespace PhosMusicConverter.Common
 
             // write txth to file
             File.WriteAllText(outputFilePath, txthBuilder.ToString());
-            Output.Log(LogLevel.INFO, " Created txth file.");
+            Output.Log(LogLevel.INFO, $"{txthName}: Created txth file.");
         }
 
         /// <summary>
@@ -74,6 +77,9 @@ namespace PhosMusicConverter.Common
         /// <param name="endSample">The new loop end sample.</param>
         public static void UpdateTxthFile(string txthPath, int startSample, int endSample)
         {
+            // store txth name for output
+            string txthName = Path.GetFileName(txthPath);
+
             // exit early if original txth is missing (shouldn't happen but oh well)
             if (!File.Exists(txthPath))
             {
@@ -91,7 +97,7 @@ namespace PhosMusicConverter.Common
             // default to full loop if loop points are invalid or both points are 0
             if (!IsValidLoop(totalSamples, finalStartSample, finalEndSample) || (startSample == 0 && endSample == 0))
             {
-                Output.Log(LogLevel.WARNING, "Invalid loop points! Defaulting to full song loop!");
+                Output.Log(LogLevel.WARN, $"{txthName}: Invalid loop points! Defaulting to full song loop!");
                 finalStartSample = 0;
                 finalEndSample = AlignToBlock(totalSamples, samplesPerBlock);
             }
@@ -119,12 +125,12 @@ namespace PhosMusicConverter.Common
         {
             if (startSample > totalSamples)
             {
-                Output.Log(LogLevel.WARNING, $"Loop start sample exceeds total samples: {startSample} > {totalSamples}");
+                Output.Log(LogLevel.WARN, $"Loop start sample exceeds total samples: {startSample} > {totalSamples}");
                 return false;
             }
             else if (endSample > totalSamples)
             {
-                Output.Log(LogLevel.WARNING, $"Loop end sample exceeds total samples: {endSample} > {totalSamples}");
+                Output.Log(LogLevel.WARN, $"Loop end sample exceeds total samples: {endSample} > {totalSamples}");
                 return false;
             }
             else

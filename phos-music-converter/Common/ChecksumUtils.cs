@@ -3,7 +3,6 @@
 
 namespace PhosMusicConverter.Common
 {
-    using System;
     using System.IO;
     using System.Security.Cryptography;
 

@@ -18,9 +18,9 @@ namespace PhosMusicConverter.Builders
         /// Initializes a new instance of the <see cref="BuilderP5"/> class. Generates a Music Build for Persona 5.
         /// </summary>
         /// <param name="path">Input music data JSON file.</param>
-        /// <param name="verbose">Verbose setting for errors.</param>
-        public BuilderP5(string path)
-            : base(path, "Persona 5")
+        /// <param name="encoder">Path to encoder.</param>
+        public BuilderP5(string path, string encoder)
+            : base("Persona 5", path, encoder)
         {
         }
 

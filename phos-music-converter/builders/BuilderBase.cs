@@ -22,12 +22,13 @@ namespace PhosMusicConverter.Builders
         /// <summary>
         /// Initializes a new instance of the <see cref="BuilderBase"/> class.
         /// </summary>
-        /// <param name="musicDataPath">Path to music data JSON file.</param>
         /// <param name="gameName">Name of game the Music Builder is for.</param>
-        /// <param name="verbose">Verbose setting for errors.</param>
-        protected BuilderBase(string musicDataPath, string gameName)
+        /// <param name="musicDataPath">Path to music data JSON file.</param>
+        /// <param name="encoder">Path of encoder to use.</param>
+        protected BuilderBase(string gameName, string musicDataPath, string encoder)
         {
             this.musicData = MusicDataParser.ParseMusicData(musicDataPath);
+            this.EncoderPath = encoder;
             if (!Directory.Exists(this.CachedDirectory))
             {
                 Directory.CreateDirectory(this.CachedDirectory);
@@ -40,6 +41,11 @@ namespace PhosMusicConverter.Builders
         /// Gets cache directory for game's Music Builds.
         /// </summary>
         protected abstract string CachedDirectory { get; }
+
+        /// <summary>
+        /// Gets path to encoder.
+        /// </summary>
+        protected string EncoderPath { get; init; }
 
         /// <inheritdoc/>
         public abstract void GenerateBuild(string outputDir, bool useLow);

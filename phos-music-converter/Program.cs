@@ -18,7 +18,7 @@ namespace PhosMusicConverter
     {
         private static void Main(string[] args)
         {
-            Console.WriteLine("Yo dayo!");
+            Output.Log(LogLevel.INFO, "Yo dayo!");
             Parser.Default.ParseArguments<CommandOptions>(args)
                 .WithParsed<CommandOptions>(o =>
                 {
@@ -27,11 +27,11 @@ namespace PhosMusicConverter
                         Output.Verbose = true;
                     }
 
-                    GenerateMusicBuild(o.GameName, o.MusicData, o.OutputDirectory, o.UseLowPerformance);
+                    GenerateMusicBuild(o.GameName, o.MusicData, o.EncoderPath, o.OutputDirectory, o.UseLowPerformance);
                 });
         }
 
-        private static void GenerateMusicBuild(string game, string musicDataPath, string outputDir, bool useLow)
+        private static void GenerateMusicBuild(string game, string musicDataPath, string encoder, string outputDir, bool useLow)
         {
             try
             {
@@ -39,20 +39,20 @@ namespace PhosMusicConverter
                 switch (game)
                 {
                     case "p4g":
-                        musicBuilder = new BuilderP4G(musicDataPath);
+                        musicBuilder = new BuilderP4G(musicDataPath, encoder);
                         break;
 
                     case "p5":
-                        musicBuilder = new BuilderP5(musicDataPath);
+                        musicBuilder = new BuilderP5(musicDataPath, encoder);
                         break;
 
                     case "p3f":
                     case "p4":
-                        musicBuilder = new BuilderP3F(musicDataPath);
+                        musicBuilder = new BuilderP3F(musicDataPath, encoder);
                         break;
 
                     default:
-                        Console.WriteLine($"Unsupported game option: {game}!");
+                        Output.Log(LogLevel.ERROR, $"Unsupported game option: {game}!");
                         return;
                 }
 
@@ -61,17 +61,17 @@ namespace PhosMusicConverter
                 musicBuilder.GenerateBuild(outputDir, useLow);
                 timer.Stop();
 
-                Console.WriteLine($"[INFO] Completed in {timer.ElapsedMilliseconds} ms.");
+                Output.Log(LogLevel.INFO, $"Completed in {timer.ElapsedMilliseconds} ms");
             }
             catch (FileNotFoundException ex)
             {
-                Console.WriteLine(ex.ToString());
-                Console.WriteLine($"\nCould not find file: {ex.FileName}");
+                Output.Log(LogLevel.ERROR, ex.ToString());
+                Output.Log(LogLevel.ERROR, $"Could not find file: {ex.FileName}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
-                Console.WriteLine("Failed to generate build!");
+                Output.Log(LogLevel.ERROR, ex.ToString());
+                Output.Log(LogLevel.ERROR, "Failed to generate build!");
             }
         }
 
@@ -83,10 +83,13 @@ namespace PhosMusicConverter
             [Option('i', "input", Required = true, HelpText = "Input music data JSON.")]
             public string MusicData { get; set; }
 
+            [Option('e', "encoder", Required = true, HelpText = "Path of encoder to use.")]
+            public string EncoderPath { get; set; }
+
             [Option('o', "output", Required = true, HelpText = "Directory to generate music build in.")]
             public string OutputDirectory { get; set; }
 
-            [Option('l', "low", Required = false, Default = false, HelpText = "Set Phos Music Converter to use less resources. Only use if Phos Music Converter has issues building normally.")]
+            [Option('l', "low", Required = false, Default = false, HelpText = "Set Phos Music Converter to use less resources. Only use if Phos Music Converter has issues building normally. NOT IMPLEMENTED")]
             public bool UseLowPerformance { get; set; }
 
             [Option('v', "verbose", Required = false, Default = false, HelpText = "Set output to verbose messages.")]

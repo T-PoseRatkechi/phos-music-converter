@@ -16,17 +16,14 @@ namespace PhosMusicConverter.Builders
     /// </summary>
     internal class BuilderP4G : BuilderBase
     {
-        private readonly string encoderPath;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BuilderP4G"/> class.
         /// </summary>
         /// <param name="path">Path to Music Data JSON file.</param>
-        /// <param name="verbose">Verbose setting for errors.</param>
-        public BuilderP4G(string path)
-            : base(path, "P4G")
+        /// <param name="encoder">Path to encoder.</param>
+        public BuilderP4G(string path, string encoder)
+            : base("P4G", path, encoder)
         {
-            this.encoderPath = $@"{Directory.GetCurrentDirectory()}\..\xacttool_0.1\tools\AdpcmEncode.exe";
         }
 
         /// <inheritdoc/>
@@ -35,15 +32,44 @@ namespace PhosMusicConverter.Builders
         /// <inheritdoc/>
         public override void GenerateBuild(string outputDir, bool useLow)
         {
-            string currentDir = Directory.GetCurrentDirectory();
-
-            string encoderPath = $@"{currentDir}\..\xacttool_0.1\tools\AdpcmEncode.exe";
-            if (!File.Exists(encoderPath))
+            // Check that the encoder exists.
+            if (!File.Exists(this.EncoderPath))
             {
-                throw new FileNotFoundException($"AdpcmEncode.exe could not be found!", Path.GetFullPath(encoderPath));
+                throw new FileNotFoundException($"AdpcmEncode.exe could not be found!", Path.GetFullPath(this.EncoderPath));
             }
 
+            // Encode unique files to cache.
             this.EncodeUniqueFiles();
+
+            // Check the output directory exists, if not then create it.
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Empty out the output folder.
+            foreach (var file in Directory.GetFiles(outputDir))
+            {
+                File.Delete(file);
+            }
+
+            int totalSongs = 0;
+
+            // Copy from cache files to the proper destination.
+            foreach (var song in this.GetMusicData().songs)
+            {
+                if (song.replacementFilePath != null && song.isEnabled)
+                {
+                    string cachedFileName = $"{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw";
+
+                    // copy cached raw and txth for song to output directory as the correct wave index
+                    File.Copy($@"{this.CachedDirectory}\{cachedFileName}", $@"{outputDir}\{song.waveIndex}.raw");
+                    File.Copy($@"{this.CachedDirectory}\{cachedFileName}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
+                    totalSongs++;
+                }
+            }
+
+            Output.Log(LogLevel.INFO, $"Music Build generated with {totalSongs} total songs");
         }
 
         /// <summary>
@@ -60,10 +86,12 @@ namespace PhosMusicConverter.Builders
                 }
             }
 
+            Output.Log(LogLevel.LOG, $"Processing {uniqueSongs.Count} songs");
             Parallel.ForEach(uniqueSongs, song =>
             {
                 this.EncodeSong(song.replacementFilePath, $@"{this.CachedDirectory}\{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw", song.loopStartSample, song.loopEndSample);
             });
+            Output.Log(LogLevel.INFO, $"Processed {uniqueSongs.Count} songs");
         }
 
         /// <summary>
@@ -76,15 +104,17 @@ namespace PhosMusicConverter.Builders
         /// <param name="endSample">Loop end sample.</param>
         private void EncodeSong(string songPath, string outPath, int startSample, int endSample)
         {
+            // store file name for logging
+            string fileName = Path.GetFileName(songPath);
+
             // check if input file should be re-encoded
             bool requiresEncoding = this.RequiresEncoding(songPath, outPath);
 
             // only update txth file if wave doesn't need to be encoded
             if (!requiresEncoding)
             {
-                // store result of txth updated
+                Output.Log(LogLevel.INFO, $"{fileName}: Using cached encoded file");
                 TxthHandler.UpdateTxthFile($"{outPath}.txth", startSample, endSample);
-                Output.Log(LogLevel.LOG, "Updated txth file");
                 return;
             }
 
@@ -93,7 +123,7 @@ namespace PhosMusicConverter.Builders
 
             ProcessStartInfo encodeInfo = new()
             {
-                FileName = this.encoderPath,
+                FileName = this.EncoderPath,
                 Arguments = $@"""{songPath}"" ""{tempFilePath}""",
                 CreateNoWindow = true,
             };

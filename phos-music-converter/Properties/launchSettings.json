@@ -2,7 +2,7 @@
   "profiles": {
     "phos-music-converter": {
       "commandName": "Project",
-      "commandLineArgs": "-g p4g -i current-music-data.json -o music-build -v true"
+      "commandLineArgs": "-g p4g -i current-music-data.json -o music-build -e \"../xacttool_0.1/tools/AdpcmEncode.exe\""
     }
   }
 }
