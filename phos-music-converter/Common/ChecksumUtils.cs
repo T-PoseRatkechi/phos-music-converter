@@ -17,15 +17,12 @@ namespace PhosMusicConverter.Common
         /// <returns>MD5 hash of <paramref name="file"/>.</returns>
         public static byte[] GetChecksum(string file)
         {
-            // get md5 checksum of file
-            using (var md5 = MD5.Create())
-            {
-                using (var stream = File.OpenRead(file))
-                {
-                    // return hash
-                    return md5.ComputeHash(stream);
-                }
-            }
+            // Get md5 checksum of file.
+            using var md5 = MD5.Create();
+            using var stream = File.OpenRead(file);
+
+            // Return hash.
+            return md5.ComputeHash(stream);
         }
 
         /// <summary>

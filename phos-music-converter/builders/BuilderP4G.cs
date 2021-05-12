@@ -23,8 +23,8 @@ namespace PhosMusicConverter.Builders
         /// </summary>
         /// <param name="path">Path to Music Data JSON file.</param>
         /// <param name="verbose">Verbose setting for errors.</param>
-        public BuilderP4G(string path, bool verbose)
-            : base(path, "P4G", verbose)
+        public BuilderP4G(string path)
+            : base(path, "P4G")
         {
             this.encoderPath = $@"{Directory.GetCurrentDirectory()}\..\xacttool_0.1\tools\AdpcmEncode.exe";
         }
@@ -33,7 +33,7 @@ namespace PhosMusicConverter.Builders
         protected override string CachedDirectory { get => $@"{Directory.GetCurrentDirectory()}\cached\adpcm"; }
 
         /// <inheritdoc/>
-        public override void GenerateBuild(string outputDir, bool useLow, bool verbose)
+        public override void GenerateBuild(string outputDir, bool useLow)
         {
             string currentDir = Directory.GetCurrentDirectory();
 
@@ -51,7 +51,7 @@ namespace PhosMusicConverter.Builders
         /// </summary>
         private void EncodeUniqueFiles()
         {
-            HashSet<Song> uniqueSongs = new HashSet<Song>();
+            HashSet<Song> uniqueSongs = new();
             foreach (var song in this.GetMusicData().songs)
             {
                 if (song.replacementFilePath != null)
@@ -82,73 +82,64 @@ namespace PhosMusicConverter.Builders
             // only update txth file if wave doesn't need to be encoded
             if (!requiresEncoding)
             {
-                Console.WriteLine("Updating txth file!");
-
                 // store result of txth updated
                 TxthHandler.UpdateTxthFile($"{outPath}.txth", startSample, endSample);
+                Output.Log(LogLevel.LOG, "Updated txth file");
                 return;
             }
 
-            // file path to store temp encoded file (still has header)
+            // File path to store temp encoded file (still has header).
             string tempFilePath = $@"{outPath}.temp";
 
-            ProcessStartInfo encodeInfo = new ProcessStartInfo
+            ProcessStartInfo encodeInfo = new()
             {
                 FileName = this.encoderPath,
                 Arguments = $@"""{songPath}"" ""{tempFilePath}""",
+                CreateNoWindow = true,
             };
 
-            Process process = Process.Start(encodeInfo);
-            process.WaitForExit();
+            Process encoder = Process.Start(encodeInfo);
+            encoder.WaitForExit();
 
-            if (process.ExitCode != 0)
-            {
-                Console.WriteLine($"Problem with AdpcmEncode! Exit code: {process.ExitCode}");
-                return;
-            }
-
-            Console.WriteLine($"Output: {tempFilePath}");
-
-            // Load the required wave properties
-            WaveProps waveProps = default(WaveProps);
+            // Load the required wave properties.
+            WaveProps waveProps = default;
             if (!Waves.LoadWaveProps(songPath, ref waveProps))
             {
-                // Throw if wave props failed to load
-                // throw new ArgumentException("Problem reading the wave properties of file!", songPath);
+                throw new ArgumentException("Problem reading the wave properties of file!", songPath);
             }
 
-            // Get total number of samples from input wave
+            // Get total number of samples from input wave.
             int waveTotalSamples = Waves.GetTotalSamples(waveProps);
             if (waveTotalSamples == -1)
             {
-                Console.WriteLine("[ERROR] Failed to calculate total samples! Re-converting the file to wave can sometimes fix this.");
+                Output.Log(LogLevel.ERROR, "Failed to calculate total samples! Re-converting the file to wave can sometimes fix this.");
                 return;
             }
 
-            // Get wave props of temp file
-            WaveProps outputWaveProps = default(WaveProps);
+            // Get wave props of temp file.
+            WaveProps outputWaveProps = default;
             if (!Waves.LoadWaveProps(tempFilePath, ref outputWaveProps))
             {
                 // Throw if wave props failed to load
                 throw new ArgumentException("Problem reading the wave properties of temporary encoded file!", tempFilePath);
             }
 
-            // Array to store data chunk bytes
+            // Array to store data chunk bytes.
             byte[] outDataChunk = new byte[outputWaveProps.SubchunkSize2];
 
-            // read data chunk into array
+            // Read data chunk into array.
             using (FileStream tempfile = File.OpenRead(tempFilePath))
             {
                 tempfile.Seek(outputWaveProps.DataStartOffset, SeekOrigin.Begin);
                 tempfile.Read(outDataChunk, 0, outDataChunk.Length);
             }
 
-            // write txth file
+            // Write txth file.
             TxthHandler.WriteTxthFile($"{outPath}.txth", outputWaveProps, waveTotalSamples, startSample, endSample);
 
             File.WriteAllBytes($"{outPath}", outDataChunk);
 
-            // delete temp file
+            // Delete temp file.
             File.Delete(tempFilePath);
         }
     }

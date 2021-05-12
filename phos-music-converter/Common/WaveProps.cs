@@ -1,4 +1,7 @@
-﻿namespace PhosMusicConverter.Common
+﻿// Copyright (c) T-Pose Ratkechi. All rights reserved.
+// Licensed under the GNU GPLv3 license. See LICENSE file in the project root for full license information.
+
+namespace PhosMusicConverter.Common
 {
     /// <summary>
     /// Struct containing only the necessary information needed about waves for all of this to work.

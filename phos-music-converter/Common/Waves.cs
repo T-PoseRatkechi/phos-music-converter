@@ -20,7 +20,7 @@ namespace PhosMusicConverter.Common
         /// <returns>Whether the <c>WaveProps</c> were loaded successfully into <paramref name="props"/>.</returns>
         public static bool LoadWaveProps(string wavefile, ref WaveProps props)
         {
-            using (BinaryReader reader = new BinaryReader(File.OpenRead(wavefile)))
+            using (BinaryReader reader = new(File.OpenRead(wavefile)))
             {
                 // Check RIFF header
                 if (!reader.ReadBytes(4).SequenceEqual(new byte[] { 0x52, 0x49, 0x46, 0x46 }))

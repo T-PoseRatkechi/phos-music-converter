@@ -20,25 +20,20 @@ namespace PhosMusicConverter.Builders
         private readonly MusicData musicData;
 
         /// <summary>
-        /// Verbose setting for errors.
-        /// </summary>
-        private readonly bool isVerbose;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="BuilderBase"/> class.
         /// </summary>
         /// <param name="musicDataPath">Path to music data JSON file.</param>
         /// <param name="gameName">Name of game the Music Builder is for.</param>
         /// <param name="verbose">Verbose setting for errors.</param>
-        protected BuilderBase(string musicDataPath, string gameName, bool verbose)
+        protected BuilderBase(string musicDataPath, string gameName)
         {
-            this.isVerbose = verbose;
             this.musicData = MusicDataParser.ParseMusicData(musicDataPath);
             if (!Directory.Exists(this.CachedDirectory))
             {
                 Directory.CreateDirectory(this.CachedDirectory);
             }
-            Console.WriteLine($"{gameName} Music Builder");
+
+            Output.Log(LogLevel.INFO, $"Using {gameName} Music Builder");
         }
 
         /// <summary>
@@ -47,7 +42,7 @@ namespace PhosMusicConverter.Builders
         protected abstract string CachedDirectory { get; }
 
         /// <inheritdoc/>
-        public abstract void GenerateBuild(string outputDir, bool useLow, bool verbose);
+        public abstract void GenerateBuild(string outputDir, bool useLow);
 
         /// <summary>
         /// Determines if <paramref name="file"/> should be encoded.
@@ -59,43 +54,41 @@ namespace PhosMusicConverter.Builders
         /// <returns>Whether <paramref name="file"/> should be encoded.</returns>
         protected bool RequiresEncoding(string file, string outfile)
         {
-            // outfile doesn't even exist
+            // Get currently saved checksum of file.
+            byte[] savedSum = ChecksumUtils.GetSavedChecksum(file, this.CachedDirectory);
+
+            // Outfile doesn't even exist.
             if (!File.Exists(outfile))
             {
+                Output.Log(LogLevel.DEBUG, $"Encoded .raw file missing. File wil be encoded. File: {file}");
                 return true;
             }
 
             try
             {
-                // get currently saved checksum of file
-                byte[] savedSum = ChecksumUtils.GetSavedChecksum(file, this.CachedDirectory);
-
-                // file has no saved checksum so is new file
+                // File had no saved checksum, meaning it's a new file.
                 if (savedSum == null)
                 {
+                    Output.Log(LogLevel.DEBUG, $"New file. File Will be encoded File: {file}");
                     return true;
                 }
 
-                // check if file's current sum still matches saved sum
+                // Check if file's current sum still matches saved sum.
                 if (savedSum.SequenceEqual(ChecksumUtils.GetChecksum(file)))
                 {
-                    // Console.WriteLine("Checksum match! Re-encoding not required...");
+                    Output.Log(LogLevel.DEBUG, $"Saved checksum matches file. Encoding not required. File: {file}");
                     return false;
                 }
                 else
                 {
-                    // Console.WriteLine("Checksum mismatch! Re-encoding required!");
+                    Output.Log(LogLevel.DEBUG, $"Saved checksum doesn't match file. Re-encoding required. File: {file}");
                     return true;
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                if (this.isVerbose)
-                {
-                    Console.WriteLine(e);
-                }
-
-                Console.WriteLine("[ERROR] Problem checking file checksums!");
+                Output.Log(LogLevel.ERROR, ex.ToString());
+                Output.Log(LogLevel.ERROR, "Problem checking file checksums!");
                 return true;
             }
         }

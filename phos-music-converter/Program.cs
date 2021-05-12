@@ -8,6 +8,7 @@ namespace PhosMusicConverter
     using System.IO;
     using CommandLine;
     using PhosMusicConverter.Builders;
+    using PhosMusicConverter.Common;
     using PhosMusicConverter.Interfaces;
 
     /// <summary>
@@ -21,11 +22,16 @@ namespace PhosMusicConverter
             Parser.Default.ParseArguments<CommandOptions>(args)
                 .WithParsed<CommandOptions>(o =>
                 {
-                    GenerateMusicBuild(o.GameName, o.MusicData, o.OutputDirectory, o.UseLowPerformance, o.Verbose);
+                    if (o.Verbose)
+                    {
+                        Output.Verbose = true;
+                    }
+
+                    GenerateMusicBuild(o.GameName, o.MusicData, o.OutputDirectory, o.UseLowPerformance);
                 });
         }
 
-        private static void GenerateMusicBuild(string game, string musicDataPath, string outputDir, bool useLow, bool verbose)
+        private static void GenerateMusicBuild(string game, string musicDataPath, string outputDir, bool useLow)
         {
             try
             {
@@ -33,16 +39,16 @@ namespace PhosMusicConverter
                 switch (game)
                 {
                     case "p4g":
-                        musicBuilder = new BuilderP4G(musicDataPath, verbose);
+                        musicBuilder = new BuilderP4G(musicDataPath);
                         break;
 
                     case "p5":
-                        musicBuilder = new BuilderP5(musicDataPath, verbose);
+                        musicBuilder = new BuilderP5(musicDataPath);
                         break;
 
                     case "p3f":
                     case "p4":
-                        musicBuilder = new BuilderP3F(musicDataPath, verbose);
+                        musicBuilder = new BuilderP3F(musicDataPath);
                         break;
 
                     default:
@@ -50,9 +56,9 @@ namespace PhosMusicConverter
                         return;
                 }
 
-                Stopwatch timer = new Stopwatch();
+                Stopwatch timer = new();
                 timer.Start();
-                musicBuilder.GenerateBuild(outputDir, useLow, verbose);
+                musicBuilder.GenerateBuild(outputDir, useLow);
                 timer.Stop();
 
                 Console.WriteLine($"[INFO] Completed in {timer.ElapsedMilliseconds} ms.");

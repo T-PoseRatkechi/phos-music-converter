@@ -13,7 +13,6 @@ namespace PhosMusicConverter.Interfaces
         /// </summary>
         /// <param name="outputDir">Directory to output music build to.</param>
         /// <param name="useLow">Whether to use less resource intensive processes for generating builds.</param>
-        /// <param name="verbose">Output more console comments. Meant for debugging purposes.</param>
-        void GenerateBuild(string outputDir, bool useLow, bool verbose);
+        void GenerateBuild(string outputDir, bool useLow);
     }
 }

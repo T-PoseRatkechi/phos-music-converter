@@ -26,7 +26,7 @@ namespace PhosMusicConverter.Common
             byte samplesPerBlock = props.ExtraParamsBytes[0];
 
             // Build txth string.
-            StringBuilder txthBuilder = new StringBuilder();
+            StringBuilder txthBuilder = new();
             txthBuilder.AppendLine($"num_samples = {AlignToBlock(totalSamples, samplesPerBlock)}");
             txthBuilder.AppendLine("codec = MSADPCM");
             txthBuilder.AppendLine($"channels = {props.NumChannels}");
@@ -51,7 +51,7 @@ namespace PhosMusicConverter.Common
                 // verify loop points are valid
                 if (!IsValidLoop(totalSamples, finalStartSample, finalEndSample))
                 {
-                    Console.WriteLine("Defaulting to full song loop!");
+                    Output.Log(LogLevel.WARNING, "Loop points were invalid! Defaulting to full song loop!");
                     finalStartSample = 0;
                     finalEndSample = AlignToBlock(totalSamples, samplesPerBlock);
                 }
@@ -63,7 +63,7 @@ namespace PhosMusicConverter.Common
 
             // write txth to file
             File.WriteAllText(outputFilePath, txthBuilder.ToString());
-            Console.WriteLine("[INFO] Created txth file.");
+            Output.Log(LogLevel.INFO, " Created txth file.");
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace PhosMusicConverter.Common
             }
 
             string[] originalTxthFile = File.ReadAllLines(txthPath);
-            StringBuilder txthBuilder = new StringBuilder();
+            StringBuilder txthBuilder = new();
 
             int totalSamples = int.Parse(Array.Find<string>(originalTxthFile, s => s.StartsWith("num_samples")).Split(" = ")[1]);
             byte samplesPerBlock = File.ReadAllBytes($"{txthPath}.extra")[0];
@@ -91,7 +91,7 @@ namespace PhosMusicConverter.Common
             // default to full loop if loop points are invalid or both points are 0
             if (!IsValidLoop(totalSamples, finalStartSample, finalEndSample) || (startSample == 0 && endSample == 0))
             {
-                Console.WriteLine("Defaulting to full song loop!");
+                Output.Log(LogLevel.WARNING, "Invalid loop points! Defaulting to full song loop!");
                 finalStartSample = 0;
                 finalEndSample = AlignToBlock(totalSamples, samplesPerBlock);
             }
@@ -119,12 +119,12 @@ namespace PhosMusicConverter.Common
         {
             if (startSample > totalSamples)
             {
-                Console.WriteLine($"Loop start sample exceeds total samples: {startSample} > {totalSamples}");
+                Output.Log(LogLevel.WARNING, $"Loop start sample exceeds total samples: {startSample} > {totalSamples}");
                 return false;
             }
             else if (endSample > totalSamples)
             {
-                Console.WriteLine($"Loop end sample exceeds total samples: {endSample} > {totalSamples}");
+                Output.Log(LogLevel.WARNING, $"Loop end sample exceeds total samples: {endSample} > {totalSamples}");
                 return false;
             }
             else
@@ -146,7 +146,7 @@ namespace PhosMusicConverter.Common
             {
                 // Align sample to block.
                 int adjustment = (byte)(sample % perBlock);
-                Console.WriteLine($"Aligning: {sample} to {sample - adjustment} (-{adjustment})");
+                Output.Log(LogLevel.LOG, $"Aligning: {sample} to {sample - adjustment} (-{adjustment})");
                 return sample - adjustment;
             }
             else
