@@ -1,36 +1,84 @@
-﻿using PhosMusicConverter.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) T-Pose Ratkechi. All rights reserved.
+// Licensed under the GNU GPLv3 license. See LICENSE file in the project root for full license information.
 
 namespace PhosMusicConverter.Builders
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using PhosMusicConverter.Common;
+
+    /// <summary>
+    /// Music Builder for Persona 4 Golden.
+    /// </summary>
     internal class BuilderP4G : BuilderBase
     {
-        public BuilderP4G(string path) : base(path, "P4G")
+        private readonly string cachedDirectory;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BuilderP4G"/> class.
+        /// </summary>
+        /// <param name="path">Path to Music Data JSON file.</param>
+        /// <param name="verbose">Verbose setting for errors.</param>
+        public BuilderP4G(string path, bool verbose)
+            : base(path, "P4G", verbose)
         {
+            this.cachedDirectory = $@"{Directory.GetCurrentDirectory()}\cached";
         }
 
+        /// <inheritdoc/>
         public override void GenerateBuild(string outputDir, bool useLow, bool verbose)
         {
             string currentDir = Directory.GetCurrentDirectory();
 
             string encoderPath = $@"{currentDir}\..\xacttool_0.1\tools\AdpcmEncode.exe";
             if (!File.Exists(encoderPath))
+            {
                 throw new FileNotFoundException($"AdpcmEncode.exe could not be found!", Path.GetFullPath(encoderPath));
+            }
+
+            this.EncodeUniqueFiles();
         }
 
+        /// <summary>
+        /// Iterates over local music data and encodes every unique replacement file.
+        /// </summary>
         private void EncodeUniqueFiles()
         {
+            HashSet<string> uniqueSongs = new HashSet<string>();
+            foreach (var song in this.GetMusicData().songs)
+            {
+                if (song.replacementFilePath != null)
+                {
+                    uniqueSongs.Add(song.replacementFilePath);
+                }
+            }
+
+            Parallel.ForEach(uniqueSongs, song =>
+            {
+                this.EncodeSong(song, $@"{this.cachedDirectory}\{Path.GetFileNameWithoutExtension(song)}.raw");
+            });
         }
 
+        /// <summary>
+        /// Encodes the file <paramref name="songPath"/> to .raw file at <paramref name="outPath"/>.
+        /// Only encodes if the file <paramref name="songPath"/> has not been encoded before or has been edited since the last encoding.
+        /// </summary>
+        /// <param name="songPath">Path of file to encode.</param>
+        /// <param name="outPath">Encoded output file path.</param>
         private void EncodeSong(string songPath, string outPath)
         {
+            WaveProps waveProps = default(WaveProps);
+            if (!Waves.LoadWaveProps(songPath, ref waveProps))
+            {
+                throw new ArgumentException("Problem reading the wave properties of file!", songPath);
+            }
+
+            /*
             // check if input file should be re-encoded
-            bool waveRequiresEncoding = RequiresEncoding(songPath, outPath);
+            bool waveRequiresEncoding = this.RequiresEncoding(songPath, outPath);
 
             // only update txth file if wave doesn't need to be encoded
             if (!waveRequiresEncoding)
@@ -124,68 +172,7 @@ namespace PhosMusicConverter.Builders
             }
 
             return true;
-        }
-
-        // check if file needs to be encoded
-        private static bool RequiresEncoding(string infile, string outfile)
-        {
-            try
-            {
-                string infileChecksum = GetWaveSum(infile);
-
-                // already encoded file doesn't exist
-                if (!File.Exists(outfile))
-                {
-                    Console.WriteLine("Encoded file missing! Re-encoding required!");
-                    return true;
-                }
-
-                // checks if saved sum matches infile sum
-                if (checksum.GetChecksumString(infile).Equals(infileChecksum))
-                {
-                    Console.WriteLine("Checksum match! Re-encoding not required...");
-                    return false;
-                }
-                else
-                {
-                    Console.WriteLine("Checksum mismatch! Re-encoding required!");
-                    WriteWaveSum(infile);
-                    return true;
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return true;
-            }
-        }
-
-        // get a wave files saved checksum, create one if missing
-        private static string GetWaveSum(string filePath)
-        {
-            string waveChecksumFile = $"{Path.GetFileName(filePath)}.music";
-            string checksumFilePath = $@"{checksumsFolderPath}\{waveChecksumFile}";
-
-            // check if a checksum file for song exists
-            if (!File.Exists(checksumFilePath))
-            {
-                WriteWaveSum(filePath);
-                return null;
-            }
-            else
-            {
-                try
-                {
-                    string savedSum = File.ReadAllText(checksumFilePath);
-                    return savedSum;
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Problem reading wave file checksum!");
-                    Console.WriteLine(e);
-                    return null;
-                }
-            }
+            */
         }
     }
 }

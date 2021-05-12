@@ -1,4 +1,7 @@
-﻿namespace PhosMusicConverter
+﻿// Copyright (c) T-Pose Ratkechi. All rights reserved.
+// Licensed under the GNU GPLv3 license. See LICENSE file in the project root for full license information.
+
+namespace PhosMusicConverter
 {
     using System;
     using System.IO;
@@ -29,16 +32,16 @@
                 switch (game)
                 {
                     case "p4g":
-                        musicBuilder = new BuilderP4G(musicDataPath);
+                        musicBuilder = new BuilderP4G(musicDataPath, verbose);
                         break;
 
                     case "p5":
-                        musicBuilder = new BuilderP5(musicDataPath);
+                        musicBuilder = new BuilderP5(musicDataPath, verbose);
                         break;
 
                     case "p3f":
                     case "p4":
-                        musicBuilder = new BuilderP3F(musicDataPath);
+                        musicBuilder = new BuilderP3F(musicDataPath, verbose);
                         break;
 
                     default:

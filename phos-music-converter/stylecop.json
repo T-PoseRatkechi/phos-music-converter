@@ -6,7 +6,8 @@
       "variables": {
         "licenseName": "GNU GPLv3",
         "licenseFile": "LICENSE"
-      }
+      },
+      "xmlHeader": false
     }
   }
 }

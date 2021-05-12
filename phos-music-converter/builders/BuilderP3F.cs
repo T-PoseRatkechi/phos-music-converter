@@ -8,7 +8,8 @@ namespace PhosMusicConverter.Builders
 {
     internal class BuilderP3F : BuilderBase
     {
-        public BuilderP3F(string path) : base(path, "Persona 3 FES/Persona 4")
+        public BuilderP3F(string path, bool verbose)
+            : base(path, "Persona 3 FES/Persona 4", verbose)
         {
         }
 

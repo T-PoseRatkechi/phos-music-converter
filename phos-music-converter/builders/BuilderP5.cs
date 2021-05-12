@@ -12,8 +12,8 @@
         /// Initializes a new instance of the <see cref="BuilderP5"/> class. Generates a Music Build for Persona 5.
         /// </summary>
         /// <param name="path">Input music data JSON file.</param>
-        public BuilderP5(string path)
-            : base(path, "Persona 5")
+        public BuilderP5(string path, bool verbose)
+            : base(path, "Persona 5", verbose)
         {
         }
 
