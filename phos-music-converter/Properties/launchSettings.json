@@ -1,7 +1,8 @@
 {
   "profiles": {
     "phos-music-converter": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "-g p4g -i current-music-data.json -o build"
     }
   }
 }

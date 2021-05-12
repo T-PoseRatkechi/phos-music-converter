@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using CommandLine;
 using phos_music_converter.builders;
 using phos_music_converter.interfaces;
@@ -13,10 +14,10 @@ namespace phos_music_converter
                 HelpText = "Set what game to generate music build for. Options: p4g, p5, p3f, and p4.")]
             public string GameName { get; set; }
             [Option('i', "input", Required = true,
-                HelpText = "File path to input music data JSON.")]
+                HelpText = "Input music data JSON.")]
             public string MusicData { get; set; }
             [Option('o', "output", Required = true,
-                HelpText = "Directory path to generate music build in.")]
+                HelpText = "Directory to generate music build in.")]
             public string OutputDirectory { get; set; }
 
             [Option('l', "low", Required = false, Default = false,
@@ -38,30 +39,36 @@ namespace phos_music_converter
 
         private static void GenerateMusicBuild(string game, string musicDataPath, string outputDir, bool useLow, bool verbose)
         {
-            IMusicBuilder musicBuilder = null;
-            switch (game)
-            {
-                case "p4g":
-                    musicBuilder = new BuilderP4G();
-                    break;
-                case "p5":
-                    musicBuilder = new BuilderP5();
-                    break;
-                case "p3f":
-                case "p4":
-                    musicBuilder = new BuilderP3F();
-                    break;
-                default:
-                    break;
-            }
-
             try
             {
-                musicBuilder.GenerateBuild(musicDataPath, outputDir, useLow, verbose);
+                IMusicBuilder musicBuilder = null;
+                switch (game)
+                {
+                    case "p4g":
+                        musicBuilder = new BuilderP4G(musicDataPath);
+                        break;
+                    case "p5":
+                        musicBuilder = new BuilderP5(musicDataPath);
+                        break;
+                    case "p3f":
+                    case "p4":
+                        musicBuilder = new BuilderP3F(musicDataPath);
+                        break;
+                    default:
+                        Console.WriteLine($"Unsupported game option: {game}!");
+                        return;
+                }
+
+                musicBuilder.GenerateBuild(outputDir, useLow, verbose);
             }
-            catch (Exception e)
+            catch (FileNotFoundException ex)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(ex.ToString());
+                Console.WriteLine($"\nCould not find file: {ex.FileName}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
                 Console.WriteLine("Failed to generate build!");
             }
         }

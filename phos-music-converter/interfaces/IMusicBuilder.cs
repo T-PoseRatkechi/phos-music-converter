@@ -8,6 +8,6 @@ namespace phos_music_converter.interfaces
 {
     interface IMusicBuilder
     {
-        void GenerateBuild(string musicDataPath, string outputDir, bool useLow, bool verbose);
+        void GenerateBuild(string outputDir, bool useLow, bool verbose);
     }
 }
