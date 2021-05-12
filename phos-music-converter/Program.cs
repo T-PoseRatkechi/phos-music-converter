@@ -1,5 +1,7 @@
 ﻿using System;
 using CommandLine;
+using phos_music_converter.builders;
+using phos_music_converter.interfaces;
 
 namespace phos_music_converter
 {
@@ -36,7 +38,32 @@ namespace phos_music_converter
 
         private static void GenerateMusicBuild(string game, string musicDataPath, string outputDir, bool useLow, bool verbose)
         {
+            IMusicBuilder musicBuilder = null;
+            switch (game)
+            {
+                case "p4g":
+                    musicBuilder = new BuilderP4G();
+                    break;
+                case "p5":
+                    musicBuilder = new BuilderP5();
+                    break;
+                case "p3f":
+                case "p4":
+                    musicBuilder = new BuilderP3F();
+                    break;
+                default:
+                    break;
+            }
 
+            try
+            {
+                musicBuilder.GenerateBuild(musicDataPath, outputDir, useLow, verbose);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Console.WriteLine("Failed to generate build!");
+            }
         }
     }
 }
