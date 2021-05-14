@@ -61,11 +61,23 @@ namespace PhosMusicConverter.Builders
                 {
                     if (song.replacementFilePath != null && song.isEnabled)
                     {
-                        string cachedFileName = $"{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw";
+                        // Copy from cache encoded replacement file to build.
+                        if (!Path.GetExtension(song.replacementFilePath).ToLower().Equals(".raw"))
+                        {
+                            string cachedFileName = $"{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw";
 
-                        // copy cached raw and txth for song to output directory as the correct wave index
-                        File.Copy($@"{this.CachedDirectory}\{cachedFileName}", $@"{outputDir}\{song.waveIndex}.raw");
-                        File.Copy($@"{this.CachedDirectory}\{cachedFileName}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
+                            // copy cached raw and txth for song to output directory as the correct wave index
+                            File.Copy($@"{this.CachedDirectory}\{cachedFileName}", $@"{outputDir}\{song.waveIndex}.raw");
+                            File.Copy($@"{this.CachedDirectory}\{cachedFileName}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
+                        }
+                        else
+                        {
+                            // Copy the already encoded selected file to build.
+                            File.Copy($"{song.replacementFilePath}", $@"{outputDir}\{song.waveIndex}.raw");
+                            File.Copy($"{song.replacementFilePath}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
+                        }
+
+                        // Increment total songs in build.
                         totalSongs++;
                     }
                 });
@@ -75,13 +87,26 @@ namespace PhosMusicConverter.Builders
                 // Copy from cache files to the proper destination.
                 foreach (var song in this.GetMusicData().songs)
                 {
+                    // Copy to build replaced songs that are enabled.
                     if (song.replacementFilePath != null && song.isEnabled)
                     {
-                        string cachedFileName = $"{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw";
+                        // Copy from cache encoded replacement file to build.
+                        if (!Path.GetExtension(song.replacementFilePath).ToLower().Equals(".raw"))
+                        {
+                            string cachedFileName = $"{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw";
 
-                        // copy cached raw and txth for song to output directory as the correct wave index
-                        File.Copy($@"{this.CachedDirectory}\{cachedFileName}", $@"{outputDir}\{song.waveIndex}.raw");
-                        File.Copy($@"{this.CachedDirectory}\{cachedFileName}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
+                            // Copy cached raw and txth for song to output directory as the correct wave index.
+                            File.Copy($@"{this.CachedDirectory}\{cachedFileName}", $@"{outputDir}\{song.waveIndex}.raw");
+                            File.Copy($@"{this.CachedDirectory}\{cachedFileName}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
+                        }
+                        else
+                        {
+                            // Copy the already encoded selected file to build.
+                            File.Copy($"{song.replacementFilePath}", $@"{outputDir}\{song.waveIndex}.raw");
+                            File.Copy($"{song.replacementFilePath}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
+                        }
+
+                        // Increment total songs in build.
                         totalSongs++;
                     }
                 }
@@ -98,13 +123,15 @@ namespace PhosMusicConverter.Builders
             HashSet<Song> uniqueSongs = new();
             foreach (var song in this.GetMusicData().songs)
             {
-                if (song.replacementFilePath != null)
+                // Add each unique replacement file in the music build, excluding already encoded .raw files.
+                if (song.replacementFilePath != null && !Path.GetExtension(song.replacementFilePath).ToLower().Equals(".raw"))
                 {
                     uniqueSongs.Add(song);
                 }
             }
 
             Output.Log(LogLevel.LOG, $"Processing {uniqueSongs.Count} songs");
+
             if (!useLow)
             {
                 Parallel.ForEach(uniqueSongs, song =>

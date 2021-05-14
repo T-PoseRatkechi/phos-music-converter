@@ -19,8 +19,8 @@ namespace PhosMusicConverter
         private static void Main(string[] args)
         {
             Output.Log(LogLevel.INFO, "Yo dayo!");
-            Parser.Default.ParseArguments<CommandOptions>(args)
-                .WithParsed<CommandOptions>(o =>
+            Parser.Default.ParseArguments<CommandOptions.BuildOptions, CommandOptions.BatchOptions>(args)
+                .WithParsed<CommandOptions.BuildOptions>(o =>
                 {
                     if (o.Verbose)
                     {
@@ -28,6 +28,10 @@ namespace PhosMusicConverter
                     }
 
                     GenerateMusicBuild(o.GameName, o.MusicData, o.EncoderPath, o.OutputDirectory, o.UseLowPerformance);
+                })
+                .WithParsed<CommandOptions.BatchOptions>(o =>
+                {
+                    // TODO
                 });
         }
 
@@ -77,23 +81,43 @@ namespace PhosMusicConverter
 
         private class CommandOptions
         {
-            [Option('g', "game", Required = true, HelpText = "Set what game to generate music build for. Options: p4g, p5, p3f, and p4.")]
-            public string GameName { get; set; }
+            [Verb("build", HelpText = "Generate a Music Build.")]
+            public class BuildOptions
+            {
+                [Option('g', "game", Required = true, HelpText = "Set what game to generate music build for. Options: p4g, p5, p3f, and p4.")]
+                public string GameName { get; set; }
 
-            [Option('i', "input", Required = true, HelpText = "Input music data JSON.")]
-            public string MusicData { get; set; }
+                [Option('i', "input", Required = true, HelpText = "Input music data JSON.")]
+                public string MusicData { get; set; }
 
-            [Option('e', "encoder", Required = true, HelpText = "Path of encoder to use.")]
-            public string EncoderPath { get; set; }
+                [Option('o', "output", Required = true, HelpText = "Directory to generate music build in.")]
+                public string OutputDirectory { get; set; }
 
-            [Option('o', "output", Required = true, HelpText = "Directory to generate music build in.")]
-            public string OutputDirectory { get; set; }
+                [Option('e', "encoder", Required = true, HelpText = "Path of encoder to use.")]
+                public string EncoderPath { get; set; }
 
-            [Option('l', "low", Required = false, Default = false, HelpText = "Set Phos Music Converter to use less resources. Only use if Phos Music Converter has issues building normally. NOT IMPLEMENTED")]
-            public bool UseLowPerformance { get; set; }
+                [Option('l', "low", Required = false, Default = false, HelpText = "Set Phos Music Converter to use less resources. Only use if Phos Music Converter has issues building normally. NOT IMPLEMENTED")]
+                public bool UseLowPerformance { get; set; }
 
-            [Option('v', "verbose", Required = false, Default = false, HelpText = "Set output to verbose messages.")]
-            public bool Verbose { get; set; }
+                [Option('v', "verbose", Required = false, Default = false, HelpText = "Set output to verbose messages.")]
+                public bool Verbose { get; set; }
+            }
+
+            [Verb("batch", HelpText = "Batch encode a folder of files.")]
+            public class BatchOptions
+            {
+                [Option('f', "folder", Required = true, HelpText = "Directory of files to encode.")]
+                public string FolderDirectory { get; set; }
+
+                [Option('e', "encoder", Required = true, HelpText = "Path of encoder to use.")]
+                public string EncoderPath { get; set; }
+
+                [Option('l', "low", Required = false, Default = false, HelpText = "Set Phos Music Converter to use less resources. Only use if Phos Music Converter has issues building normally. NOT IMPLEMENTED")]
+                public bool UseLowPerformance { get; set; }
+
+                [Option('v', "verbose", Required = false, Default = false, HelpText = "Set output to verbose messages.")]
+                public bool Verbose { get; set; }
+            }
         }
     }
 }
