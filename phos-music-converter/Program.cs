@@ -25,6 +25,7 @@ namespace PhosMusicConverter
                     if (o.Verbose)
                     {
                         Output.Verbose = true;
+                        Output.Log(LogLevel.LOG, "Show debug messages enabled");
                     }
 
                     GenerateMusicBuild(o.GameName, o.MusicData, o.EncoderPath, o.OutputDirectory, o.UseLowPerformance);

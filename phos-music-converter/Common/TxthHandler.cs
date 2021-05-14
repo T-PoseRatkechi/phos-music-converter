@@ -30,7 +30,7 @@ namespace PhosMusicConverter.Common
 
             // Build txth string.
             StringBuilder txthBuilder = new();
-            txthBuilder.AppendLine($"num_samples = {AlignToBlock(totalSamples, samplesPerBlock)}");
+            txthBuilder.AppendLine($"num_samples = {AlignToBlock(txthName, totalSamples, samplesPerBlock)}");
             txthBuilder.AppendLine("codec = MSADPCM");
             txthBuilder.AppendLine($"channels = {props.NumChannels}");
             txthBuilder.AppendLine($"sample_rate = {props.SampleRate}");
@@ -44,19 +44,19 @@ namespace PhosMusicConverter.Common
             {
                 // No loop points given, set loop points to full song length.
                 txthBuilder.AppendLine("loop_start_sample = 0");
-                txthBuilder.AppendLine($"loop_end_sample = {AlignToBlock(totalSamples, samplesPerBlock)}");
+                txthBuilder.AppendLine($"loop_end_sample = {AlignToBlock(txthName, totalSamples, samplesPerBlock)}");
             }
             else
             {
-                int finalStartSample = AlignToBlock(startSample, samplesPerBlock);
-                int finalEndSample = AlignToBlock(endSample, samplesPerBlock);
+                int finalStartSample = AlignToBlock(txthName, startSample, samplesPerBlock);
+                int finalEndSample = AlignToBlock(txthName, endSample, samplesPerBlock);
 
                 // verify loop points are valid
-                if (!IsValidLoop(totalSamples, finalStartSample, finalEndSample))
+                if (!IsValidLoop(txthName, totalSamples, finalStartSample, finalEndSample))
                 {
                     Output.Log(LogLevel.WARN, $"{txthName}: Loop points were invalid! Defaulting to full song loop!");
                     finalStartSample = 0;
-                    finalEndSample = AlignToBlock(totalSamples, samplesPerBlock);
+                    finalEndSample = AlignToBlock(txthName, totalSamples, samplesPerBlock);
                 }
 
                 // add loop points given
@@ -77,29 +77,45 @@ namespace PhosMusicConverter.Common
         /// <param name="endSample">The new loop end sample.</param>
         public static void UpdateTxthFile(string txthPath, int startSample, int endSample)
         {
-            // store txth name for output
-            string txthName = Path.GetFileName(txthPath);
-
-            // exit early if original txth is missing (shouldn't happen but oh well)
+            // Exit early if original txth is missing (shouldn't happen but oh well).
             if (!File.Exists(txthPath))
             {
                 throw new FileNotFoundException("Expected txth file was not found!", txthPath);
+            }
+
+            // Store txth name for output.
+            string txthName = Path.GetFileName(txthPath);
+
+            // Samples per block. Assumed default is 128.
+            byte samplesPerBlock = 128;
+
+            // Path to .extra file that contains a file's extra params.
+            string txthExtraPath = $"{txthPath}.extra";
+
+            // Prefer to get samples per block from first byte of extra params, if possible.
+            if (File.Exists(txthExtraPath))
+            {
+                Output.Log(LogLevel.DEBUG, $"{txthName}: Getting samples per block from extra file");
+                samplesPerBlock = File.ReadAllBytes(txthExtraPath)[0];
+            }
+            else
+            {
+                Output.Log(LogLevel.DEBUG, $"{txthName}: Assuming samples per block is 128");
             }
 
             string[] originalTxthFile = File.ReadAllLines(txthPath);
             StringBuilder txthBuilder = new();
 
             int totalSamples = int.Parse(Array.Find<string>(originalTxthFile, s => s.StartsWith("num_samples")).Split(" = ")[1]);
-            byte samplesPerBlock = File.ReadAllBytes($"{txthPath}.extra")[0];
-            int finalStartSample = AlignToBlock(startSample, samplesPerBlock);
-            int finalEndSample = AlignToBlock(endSample, samplesPerBlock);
+            int finalStartSample = AlignToBlock(txthName, startSample, samplesPerBlock);
+            int finalEndSample = AlignToBlock(txthName, endSample, samplesPerBlock);
 
             // default to full loop if loop points are invalid or both points are 0
-            if (!IsValidLoop(totalSamples, finalStartSample, finalEndSample) || (startSample == 0 && endSample == 0))
+            if (!IsValidLoop(txthName, totalSamples, finalStartSample, finalEndSample) || (startSample == 0 && endSample == 0))
             {
                 Output.Log(LogLevel.WARN, $"{txthName}: Invalid loop points! Defaulting to full song loop!");
                 finalStartSample = 0;
-                finalEndSample = AlignToBlock(totalSamples, samplesPerBlock);
+                finalEndSample = AlignToBlock(txthName, totalSamples, samplesPerBlock);
             }
 
             foreach (string line in originalTxthFile)
@@ -121,16 +137,24 @@ namespace PhosMusicConverter.Common
             File.WriteAllText(txthPath, txthBuilder.ToString());
         }
 
-        private static bool IsValidLoop(int totalSamples, int startSample, int endSample)
+        /// <summary>
+        /// Sanity checks if the given loop points are valid.
+        /// </summary>
+        /// <param name="txthName">Name of txth file. Used for logging.</param>
+        /// <param name="totalSamples">The total number of samples of the file.</param>
+        /// <param name="startSample">The loop start sample.</param>
+        /// <param name="endSample">The loop end sample.</param>
+        /// <returns><c>true</c> if <paramref name="startSample"/> and <paramref name="endSample"/> are valid samples for looping, <c>false</c> otherwise.</returns>
+        private static bool IsValidLoop(string txthName, int totalSamples, int startSample, int endSample)
         {
             if (startSample > totalSamples)
             {
-                Output.Log(LogLevel.WARN, $"Loop start sample exceeds total samples: {startSample} > {totalSamples}");
+                Output.Log(LogLevel.WARN, $"{txthName}: Loop start sample exceeds total samples: {startSample} > {totalSamples}");
                 return false;
             }
             else if (endSample > totalSamples)
             {
-                Output.Log(LogLevel.WARN, $"Loop end sample exceeds total samples: {endSample} > {totalSamples}");
+                Output.Log(LogLevel.WARN, $"{txthName}: Loop end sample exceeds total samples: {endSample} > {totalSamples}");
                 return false;
             }
             else
@@ -145,14 +169,14 @@ namespace PhosMusicConverter.Common
         /// <param name="sample">The original sample to block align.</param>
         /// <param name="perBlock">Number of samples per block.</param>
         /// <returns>Blocked-aligned <paramref name="sample"/>, rounding down.</returns>
-        private static int AlignToBlock(int sample, int perBlock)
+        private static int AlignToBlock(string txthName, int sample, int perBlock)
         {
             // Check if sample given aligns already.
             if (sample % perBlock != 0)
             {
                 // Align sample to block.
                 int adjustment = (byte)(sample % perBlock);
-                Output.Log(LogLevel.LOG, $"Aligning: {sample} to {sample - adjustment} (-{adjustment})");
+                Output.Log(LogLevel.LOG, $"{txthName}: Aligning {sample} to {sample - adjustment} (-{adjustment})");
                 return sample - adjustment;
             }
             else

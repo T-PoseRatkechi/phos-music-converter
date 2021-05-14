@@ -75,6 +75,9 @@ namespace PhosMusicConverter.Builders
                             // Copy the already encoded selected file to build.
                             File.Copy($"{song.replacementFilePath}", $@"{outputDir}\{song.waveIndex}.raw");
                             File.Copy($"{song.replacementFilePath}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
+
+                            // Update the copied txth's loop samples to the song's given loop samples.
+                            TxthHandler.UpdateTxthFile($@"{outputDir}\{song.waveIndex}.raw.txth", song.loopStartSample, song.loopEndSample);
                         }
 
                         // Increment total songs in build.
@@ -84,6 +87,8 @@ namespace PhosMusicConverter.Builders
             }
             else
             {
+                Output.Log(LogLevel.INFO, "Low performance mode enabled");
+
                 // Copy from cache files to the proper destination.
                 foreach (var song in this.GetMusicData().songs)
                 {
@@ -104,6 +109,9 @@ namespace PhosMusicConverter.Builders
                             // Copy the already encoded selected file to build.
                             File.Copy($"{song.replacementFilePath}", $@"{outputDir}\{song.waveIndex}.raw");
                             File.Copy($"{song.replacementFilePath}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
+
+                            // Update the copied txth's loop samples to the song's given loop samples.
+                            TxthHandler.UpdateTxthFile($@"{outputDir}\{song.waveIndex}.raw.txth", song.loopStartSample, song.loopEndSample);
                         }
 
                         // Increment total songs in build.
