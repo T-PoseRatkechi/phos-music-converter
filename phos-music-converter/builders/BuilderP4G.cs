@@ -35,7 +35,7 @@ namespace PhosMusicConverter.Builders
             // Check that the encoder exists.
             if (!File.Exists(this.EncoderPath))
             {
-                throw new FileNotFoundException($"AdpcmEncode.exe could not be found!", Path.GetFullPath(this.EncoderPath));
+                throw new FileNotFoundException($"{Path.GetFileName(this.EncoderPath)} could not be found!", Path.GetFullPath(this.EncoderPath));
             }
 
             // Encode unique files to cache.
