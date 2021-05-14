@@ -39,7 +39,7 @@ namespace PhosMusicConverter.Builders
             }
 
             // Encode unique files to cache.
-            this.EncodeUniqueFiles();
+            this.EncodeUniqueFiles(useLow);
 
             // Check the output directory exists, if not then create it.
             if (!Directory.Exists(outputDir))
@@ -55,17 +55,35 @@ namespace PhosMusicConverter.Builders
 
             int totalSongs = 0;
 
-            // Copy from cache files to the proper destination.
-            foreach (var song in this.GetMusicData().songs)
+            if (!useLow)
             {
-                if (song.replacementFilePath != null && song.isEnabled)
+                Parallel.ForEach(this.GetMusicData().songs, song =>
                 {
-                    string cachedFileName = $"{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw";
+                    if (song.replacementFilePath != null && song.isEnabled)
+                    {
+                        string cachedFileName = $"{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw";
 
-                    // copy cached raw and txth for song to output directory as the correct wave index
-                    File.Copy($@"{this.CachedDirectory}\{cachedFileName}", $@"{outputDir}\{song.waveIndex}.raw");
-                    File.Copy($@"{this.CachedDirectory}\{cachedFileName}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
-                    totalSongs++;
+                        // copy cached raw and txth for song to output directory as the correct wave index
+                        File.Copy($@"{this.CachedDirectory}\{cachedFileName}", $@"{outputDir}\{song.waveIndex}.raw");
+                        File.Copy($@"{this.CachedDirectory}\{cachedFileName}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
+                        totalSongs++;
+                    }
+                });
+            }
+            else
+            {
+                // Copy from cache files to the proper destination.
+                foreach (var song in this.GetMusicData().songs)
+                {
+                    if (song.replacementFilePath != null && song.isEnabled)
+                    {
+                        string cachedFileName = $"{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw";
+
+                        // copy cached raw and txth for song to output directory as the correct wave index
+                        File.Copy($@"{this.CachedDirectory}\{cachedFileName}", $@"{outputDir}\{song.waveIndex}.raw");
+                        File.Copy($@"{this.CachedDirectory}\{cachedFileName}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
+                        totalSongs++;
+                    }
                 }
             }
 
@@ -75,7 +93,7 @@ namespace PhosMusicConverter.Builders
         /// <summary>
         /// Iterates over local music data and encodes every unique replacement file.
         /// </summary>
-        private void EncodeUniqueFiles()
+        private void EncodeUniqueFiles(bool useLow)
         {
             HashSet<Song> uniqueSongs = new();
             foreach (var song in this.GetMusicData().songs)
@@ -87,10 +105,21 @@ namespace PhosMusicConverter.Builders
             }
 
             Output.Log(LogLevel.LOG, $"Processing {uniqueSongs.Count} songs");
-            Parallel.ForEach(uniqueSongs, song =>
+            if (!useLow)
             {
-                this.EncodeSong(song.replacementFilePath, $@"{this.CachedDirectory}\{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw", song.loopStartSample, song.loopEndSample);
-            });
+                Parallel.ForEach(uniqueSongs, song =>
+                {
+                    this.EncodeSong(song.replacementFilePath, $@"{this.CachedDirectory}\{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw", song.loopStartSample, song.loopEndSample);
+                });
+            }
+            else
+            {
+                foreach (var song in uniqueSongs)
+                {
+                    this.EncodeSong(song.replacementFilePath, $@"{this.CachedDirectory}\{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw", song.loopStartSample, song.loopEndSample);
+                }
+            }
+
             Output.Log(LogLevel.INFO, $"Processed {uniqueSongs.Count} songs");
         }
 
