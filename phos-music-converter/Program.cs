@@ -19,7 +19,7 @@ namespace PhosMusicConverter
         private static void Main(string[] args)
         {
             Output.Log(LogLevel.INFO, "Yo dayo!");
-            Parser.Default.ParseArguments<CommandOptions.BuildOptions, CommandOptions.BatchOptions>(args)
+            Parser.Default.ParseArguments<CommandOptions.BuildOptions, CommandOptions.BatchOptions, CommandOptions.ExtractOptions>(args)
                 .WithParsed<CommandOptions.BuildOptions>(o =>
                 {
                     if (o.Verbose)
@@ -33,7 +33,49 @@ namespace PhosMusicConverter
                 .WithParsed<CommandOptions.BatchOptions>(o =>
                 {
                     // TODO
+                    throw new NotImplementedException();
+                })
+                .WithParsed<CommandOptions.ExtractOptions>(o =>
+                {
+                    if (o.Verbose)
+                    {
+                        Output.Verbose = true;
+                        Output.Log(LogLevel.LOG, "Show debug messages enabled");
+                    }
+
+                    ExtractMusic(o.ExtractFile, o.OutputDirectory);
                 });
+        }
+
+        private static void ExtractMusic(string inputFile, string outputDir)
+        {
+            try
+            {
+                string inputFileType = Path.GetExtension(inputFile).ToLower();
+                switch (inputFileType)
+                {
+                    case ".xwb":
+                        Output.Log(LogLevel.INFO, "Extracting music from XWB");
+                        Output.Log(LogLevel.INFO, "Uses code from unxwb by Luigi Auriemma.\nLicensed under the GNU GPLv3 license. See unxwb.LICENSE file in the project root for full license information.");
+                        XwbUtils.ExtractSongs(inputFile, outputDir);
+                        Output.Log(LogLevel.INFO, "Finished extracting music from XWB");
+                        break;
+
+                    default:
+                        Output.Log(LogLevel.ERROR, $"Unrecognized file type: {inputFileType}");
+                        break;
+                }
+            }
+            catch (FileNotFoundException ex)
+            {
+                Output.Log(LogLevel.ERROR, ex.ToString());
+                Output.Log(LogLevel.ERROR, $"Could not find file: {ex.FileName}");
+            }
+            catch (Exception ex)
+            {
+                Output.Log(LogLevel.ERROR, ex.ToString());
+                Output.Log(LogLevel.ERROR, "Failed to extract music!");
+            }
         }
 
         private static void GenerateMusicBuild(string game, string musicDataPath, string encoder, string outputDir, bool useLow)
@@ -115,6 +157,19 @@ namespace PhosMusicConverter
 
                 [Option('l', "low", Required = false, Default = false, HelpText = "Set Phos Music Converter to use less resources. Only use if Phos Music Converter has issues building normally. NOT IMPLEMENTED")]
                 public bool UseLowPerformance { get; set; }
+
+                [Option('v', "verbose", Required = false, Default = false, HelpText = "Set output to verbose messages.")]
+                public bool Verbose { get; set; }
+            }
+
+            [Verb("extract", HelpText = "Extract songs from supported file types.")]
+            public class ExtractOptions
+            {
+                [Option('i', "input", Required = true, HelpText = "Path of file to extract from.")]
+                public string ExtractFile { get; set; }
+
+                [Option('o', "output", Required = true, HelpText = "Directory path to output extracted files.")]
+                public string OutputDirectory { get; set; }
 
                 [Option('v', "verbose", Required = false, Default = false, HelpText = "Set output to verbose messages.")]
                 public bool Verbose { get; set; }
