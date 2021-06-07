@@ -27,7 +27,12 @@ namespace PhosMusicConverter.Builders
         /// <param name="encoder">Path of encoder to use.</param>
         protected BuilderBase(string gameName, string musicDataPath, string encoder)
         {
-            this.musicData = MusicDataParser.ParseMusicData(musicDataPath);
+            // Parse music data file if given.
+            if (musicDataPath != null)
+            {
+                this.musicData = MusicDataParser.ParseMusicData(musicDataPath);
+            }
+
             this.EncoderPath = encoder;
             if (!Directory.Exists(this.CachedDirectory))
             {
@@ -49,6 +54,9 @@ namespace PhosMusicConverter.Builders
 
         /// <inheritdoc/>
         public abstract void GenerateBuild(string outputDir, bool useLow);
+
+        /// <inheritdoc/>
+        public abstract void EncodeSong(string songPath, string outPath, int startSample = 0, int endSample = 0);
 
         /// <summary>
         /// Determines if <paramref name="file"/> should be encoded.

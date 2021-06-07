@@ -32,8 +32,13 @@ namespace PhosMusicConverter
                 })
                 .WithParsed<CommandOptions.BatchOptions>(o =>
                 {
-                    // TODO
-                    throw new NotImplementedException();
+                    if (o.Verbose)
+                    {
+                        Output.Verbose = true;
+                        Output.Log(LogLevel.LOG, "Show debug messages enabled");
+                    }
+
+                    BatchEncode(o.GameName, o.FolderDirectory, o.EncoderPath, o.UseLowPerformance);
                 })
                 .WithParsed<CommandOptions.ExtractOptions>(o =>
                 {
@@ -75,6 +80,52 @@ namespace PhosMusicConverter
             {
                 Output.Log(LogLevel.ERROR, ex.ToString());
                 Output.Log(LogLevel.ERROR, "Failed to extract music!");
+            }
+        }
+
+        private static void BatchEncode(string game, string inputDir, string encoder, bool useLow)
+        {
+            try
+            {
+                IMusicBuilder musicBuilder = null;
+                switch (game)
+                {
+                    case "p4g":
+                        musicBuilder = new BuilderP4G(null, encoder);
+                        break;
+
+                    case "p5":
+                        musicBuilder = new BuilderP5(null, encoder);
+                        break;
+
+                    case "p3f":
+                    case "p4":
+                        musicBuilder = new BuilderP3F(null, encoder);
+                        break;
+
+                    default:
+                        Output.Log(LogLevel.ERROR, $"Unsupported game option: {game}!");
+                        return;
+                }
+
+                Stopwatch timer = new();
+                timer.Start();
+
+                BatchBuilder.Batch(musicBuilder, inputDir, useLow);
+
+                timer.Stop();
+
+                Output.Log(LogLevel.INFO, $"Completed in {timer.ElapsedMilliseconds} ms");
+            }
+            catch (FileNotFoundException ex)
+            {
+                Output.Log(LogLevel.ERROR, ex.ToString());
+                Output.Log(LogLevel.ERROR, $"Could not find file: {ex.FileName}");
+            }
+            catch (Exception ex)
+            {
+                Output.Log(LogLevel.ERROR, ex.ToString());
+                Output.Log(LogLevel.ERROR, "Failed to generate build!");
             }
         }
 
@@ -149,6 +200,9 @@ namespace PhosMusicConverter
             [Verb("batch", HelpText = "Batch encode a folder of files.")]
             public class BatchOptions
             {
+                [Option('g', "game", Required = true, HelpText = "Set what game to generate music build for. Options: p4g, p5, p3f, and p4.")]
+                public string GameName { get; set; }
+
                 [Option('f', "folder", Required = true, HelpText = "Directory of files to encode.")]
                 public string FolderDirectory { get; set; }
 

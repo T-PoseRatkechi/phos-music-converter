@@ -2,7 +2,7 @@
   "profiles": {
     "phos-music-converter": {
       "commandName": "Project",
-      "commandLineArgs": "extract -i xwb/BGM.xwb -o extract -v"
+      "commandLineArgs": "batch -g p4g -f batch-test -e ../xacttool_0.1/tools/AdpcmEncode.exe -v"
     }
   }
 }

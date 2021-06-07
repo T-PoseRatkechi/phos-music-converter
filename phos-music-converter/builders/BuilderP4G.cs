@@ -123,50 +123,8 @@ namespace PhosMusicConverter.Builders
             Output.Log(LogLevel.INFO, $"Music Build generated with {totalSongs} total songs");
         }
 
-        /// <summary>
-        /// Iterates over local music data and encodes every unique replacement file.
-        /// </summary>
-        private void EncodeUniqueFiles(bool useLow)
-        {
-            HashSet<Song> uniqueSongs = new();
-            foreach (var song in this.GetMusicData().songs)
-            {
-                // Add each unique replacement file in the music build, excluding already encoded .raw files.
-                if (song.replacementFilePath != null && !Path.GetExtension(song.replacementFilePath).ToLower().Equals(".raw"))
-                {
-                    uniqueSongs.Add(song);
-                }
-            }
-
-            Output.Log(LogLevel.LOG, $"Processing {uniqueSongs.Count} songs");
-
-            if (!useLow)
-            {
-                Parallel.ForEach(uniqueSongs, song =>
-                {
-                    this.EncodeSong(song.replacementFilePath, $@"{this.CachedDirectory}\{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw", song.loopStartSample, song.loopEndSample);
-                });
-            }
-            else
-            {
-                foreach (var song in uniqueSongs)
-                {
-                    this.EncodeSong(song.replacementFilePath, $@"{this.CachedDirectory}\{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw", song.loopStartSample, song.loopEndSample);
-                }
-            }
-
-            Output.Log(LogLevel.INFO, $"Processed {uniqueSongs.Count} songs");
-        }
-
-        /// <summary>
-        /// Encodes the file <paramref name="songPath"/> to .raw file at <paramref name="outPath"/>.
-        /// Only encodes if the file <paramref name="songPath"/> has not been encoded before or has been edited since the last encoding.
-        /// </summary>
-        /// <param name="songPath">Path of file to encode.</param>
-        /// <param name="outPath">Encoded output file path.</param>
-        /// <param name="startSample">Loop start sample.</param>
-        /// <param name="endSample">Loop end sample.</param>
-        private void EncodeSong(string songPath, string outPath, int startSample, int endSample)
+        /// <inheritdoc/>
+        public override void EncodeSong(string songPath, string outPath, int startSample = 0, int endSample = 0)
         {
             // store file name for logging
             string fileName = Path.GetFileName(songPath);
@@ -235,6 +193,41 @@ namespace PhosMusicConverter.Builders
 
             // Delete temp file.
             File.Delete(tempFilePath);
+        }
+
+        /// <summary>
+        /// Iterates over local music data and encodes every unique replacement file.
+        /// </summary>
+        private void EncodeUniqueFiles(bool useLow)
+        {
+            HashSet<Song> uniqueSongs = new();
+            foreach (var song in this.GetMusicData().songs)
+            {
+                // Add each unique replacement file in the music build, excluding already encoded .raw files.
+                if (song.replacementFilePath != null && !Path.GetExtension(song.replacementFilePath).ToLower().Equals(".raw"))
+                {
+                    uniqueSongs.Add(song);
+                }
+            }
+
+            Output.Log(LogLevel.LOG, $"Processing {uniqueSongs.Count} songs");
+
+            if (!useLow)
+            {
+                Parallel.ForEach(uniqueSongs, song =>
+                {
+                    this.EncodeSong(song.replacementFilePath, $@"{this.CachedDirectory}\{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw", song.loopStartSample, song.loopEndSample);
+                });
+            }
+            else
+            {
+                foreach (var song in uniqueSongs)
+                {
+                    this.EncodeSong(song.replacementFilePath, $@"{this.CachedDirectory}\{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw", song.loopStartSample, song.loopEndSample);
+                }
+            }
+
+            Output.Log(LogLevel.INFO, $"Processed {uniqueSongs.Count} songs");
         }
     }
 }
