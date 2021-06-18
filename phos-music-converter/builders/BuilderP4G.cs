@@ -212,11 +212,6 @@ namespace PhosMusicConverter.Builders
 
             Output.Log(LogLevel.LOG, $"Processing {uniqueSongs.Count} songs");
 
-            foreach (var song in uniqueSongs)
-            {
-                Console.WriteLine(song.replacementFilePath);
-            }
-
             if (!useLow)
             {
                 Parallel.ForEach(uniqueSongs, song =>
