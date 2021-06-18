@@ -36,7 +36,10 @@ namespace PhosMusicConverter.Builders
             // Empty out the output folder.
             foreach (var file in Directory.GetFiles(outputDir))
             {
-                File.Delete(file);
+                if (!Path.GetExtension(file).ToLower().Equals(".p4g"))
+                {
+                    File.Delete(file);
+                }
             }
 
             // Encode every wave file to output.
