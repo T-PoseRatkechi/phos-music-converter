@@ -200,7 +200,7 @@ namespace PhosMusicConverter.Builders
         /// </summary>
         private void EncodeUniqueFiles(bool useLow)
         {
-            HashSet<Song> uniqueSongs = new();
+            HashSet<Song> uniqueSongs = new(new UniqueSongsComparer());
             foreach (var song in this.GetMusicData().songs)
             {
                 // Add each unique replacement file in the music build, excluding already encoded .raw files.
@@ -211,6 +211,11 @@ namespace PhosMusicConverter.Builders
             }
 
             Output.Log(LogLevel.LOG, $"Processing {uniqueSongs.Count} songs");
+
+            foreach (var song in uniqueSongs)
+            {
+                Console.WriteLine(song.replacementFilePath);
+            }
 
             if (!useLow)
             {
