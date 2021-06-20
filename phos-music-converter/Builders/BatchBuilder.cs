@@ -3,14 +3,9 @@
 
 namespace PhosMusicConverter.Builders
 {
-    using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
     using PhosMusicConverter.Common;
-    using PhosMusicConverter.Interfaces;
 
     /// <summary>
     /// Utility functions for batch stuff.
@@ -23,7 +18,7 @@ namespace PhosMusicConverter.Builders
         /// <param name="builder">Game music builder to encode files.</param>
         /// <param name="inputDir">Input directory containing waves.</param>
         /// <param name="useLow">Performance setting.</param>
-        public static void Batch(IMusicBuilder builder, string inputDir, bool useLow)
+        public static void Batch(BuilderBase builder, string inputDir, bool useLow)
         {
             Output.Log(LogLevel.INFO, "Batch Encoding");
             Output.Log(LogLevel.INFO, $"Folder: {inputDir}");
@@ -43,19 +38,18 @@ namespace PhosMusicConverter.Builders
             }
 
             // Encode every wave file to output.
-            // TODO: Account for which game it is.
             if (!useLow)
             {
                 Parallel.ForEach(waveFiles, song =>
                 {
-                    builder.EncodeSong(song, $@"{outputDir}\{Path.GetFileNameWithoutExtension(song)}.raw");
+                    builder.EncodeSong(song, $@"{outputDir}\{Path.GetFileNameWithoutExtension(song)}{builder.EncodedFileExt}");
                 });
             }
             else
             {
                 foreach (var song in waveFiles)
                 {
-                    builder.EncodeSong(song, $@"{outputDir}\{Path.GetFileNameWithoutExtension(song)}.raw");
+                    builder.EncodeSong(song, $@"{outputDir}\{Path.GetFileNameWithoutExtension(song)}{builder.EncodedFileExt}");
                 }
             }
 

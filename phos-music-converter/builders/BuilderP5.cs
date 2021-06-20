@@ -25,13 +25,13 @@ namespace PhosMusicConverter.Builders
         }
 
         /// <inheritdoc/>
+        public override string EncodedFileExt => throw new NotImplementedException();
+
+        /// <inheritdoc/>
+        public override string[] SupportedFormats => throw new NotImplementedException();
+
+        /// <inheritdoc/>
         protected override string CachedDirectory => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        protected override string EncodedFileExt => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        protected override string[] SupportedFormats => throw new NotImplementedException();
 
         /// <inheritdoc/>
         public override void EncodeSong(string songPath, string outPath, int startSample = 0, int endSample = 0)
@@ -52,7 +52,7 @@ namespace PhosMusicConverter.Builders
         }
 
         /// <inheritdoc/>
-        protected override void ProccessEncodedSong(string encodedSong, int startSample = 0, int endSample = 0)
+        protected override void ProcessEncodedSong(string encodedSong, int startSample = 0, int endSample = 0)
         {
             throw new NotImplementedException();
         }

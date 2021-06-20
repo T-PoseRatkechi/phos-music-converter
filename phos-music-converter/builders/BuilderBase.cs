@@ -9,12 +9,11 @@ namespace PhosMusicConverter.Builders
     using System.Linq;
     using System.Threading.Tasks;
     using PhosMusicConverter.Common;
-    using PhosMusicConverter.Interfaces;
 
     /// <summary>
     /// Base class for Music Builders.
     /// </summary>
-    internal abstract class BuilderBase : IMusicBuilder
+    internal abstract class BuilderBase
     {
         /// <summary>
         /// Parsed Music Data object.
@@ -45,9 +44,14 @@ namespace PhosMusicConverter.Builders
         }
 
         /// <summary>
-        /// Gets cache directory for game's Music Builds.
+        /// Gets supported input formats for builder.
         /// </summary>
-        protected abstract string CachedDirectory { get; }
+        public abstract string[] SupportedFormats { get; }
+
+        /// <summary>
+        /// Gets file extension for file encoded by the builder's encoder.
+        /// </summary>
+        public abstract string EncodedFileExt { get; }
 
         /// <summary>
         /// Gets path to encoder.
@@ -55,16 +59,15 @@ namespace PhosMusicConverter.Builders
         protected string EncoderPath { get; init; }
 
         /// <summary>
-        /// Gets file extension for file encoded by the builder's encoder.
+        /// Gets cache directory for game's Music Builds.
         /// </summary>
-        protected abstract string EncodedFileExt { get; }
+        protected abstract string CachedDirectory { get; }
 
         /// <summary>
-        /// Gets supported input formats for builder.
+        /// Generates a music build in <paramref name="outputDir"/>.
         /// </summary>
-        protected abstract string[] SupportedFormats { get; }
-
-        /// <inheritdoc/>
+        /// <param name="outputDir">Directory to output music build to.</param>
+        /// <param name="useLow">Whether to use less resource intensive processes for generating builds.</param>
         public virtual void GenerateBuild(string outputDir, bool useLow)
         {
             // Check that the encoder exists.
@@ -110,7 +113,7 @@ namespace PhosMusicConverter.Builders
 
             if (!this.RequiresEncoding(songPath, cachedSongPath))
             {
-                this.ProccessEncodedSong(cachedSongPath, startSample, endSample);
+                this.ProcessEncodedSong(cachedSongPath, startSample, endSample);
                 if (outPath != null)
                 {
                     this.CopyFromCached(songPath, outPath, startSample, endSample);
@@ -119,7 +122,7 @@ namespace PhosMusicConverter.Builders
             else
             {
                 this.Encode(songPath, cachedSongPath, startSample, endSample);
-                this.ProccessEncodedSong(cachedSongPath, startSample, endSample);
+                this.ProcessEncodedSong(cachedSongPath, startSample, endSample);
 
                 if (outPath != null)
                 {
@@ -129,12 +132,21 @@ namespace PhosMusicConverter.Builders
         }
 
         /// <summary>
+        /// Get parsed Music Data object.
+        /// </summary>
+        /// <returns>Builder's music data.</returns>
+        public MusicData GetMusicData()
+        {
+            return this.musicData;
+        }
+
+        /// <summary>
         /// Process an encoded file, if needed.
         /// </summary>
         /// <param name="encodedSong">Path to encoded file.</param>
         /// <param name="startSample">Loop start sample.</param>
         /// <param name="endSample">Loop end sample.</param>
-        protected abstract void ProccessEncodedSong(string encodedSong, int startSample = 0, int endSample = 0);
+        protected abstract void ProcessEncodedSong(string encodedSong, int startSample = 0, int endSample = 0);
 
         /// <summary>
         /// Handles copying files to output for already encoded files.
@@ -229,15 +241,6 @@ namespace PhosMusicConverter.Builders
                 Output.Log(LogLevel.ERROR, "Problem checking file checksums!");
                 return true;
             }
-        }
-
-        /// <summary>
-        /// Get parsed Music Data object.
-        /// </summary>
-        /// <returns>Builder's music data.</returns>
-        protected MusicData GetMusicData()
-        {
-            return this.musicData;
         }
 
         /// <summary>

@@ -24,13 +24,13 @@ namespace PhosMusicConverter.Builders
         }
 
         /// <inheritdoc/>
+        public override string EncodedFileExt { get => ".raw"; }
+
+        /// <inheritdoc/>
+        public override string[] SupportedFormats { get => new string[] { ".wav" }; }
+
+        /// <inheritdoc/>
         protected override string CachedDirectory { get => $@"{Directory.GetCurrentDirectory()}\cached\adpcm"; }
-
-        /// <inheritdoc/>
-        protected override string EncodedFileExt { get => ".raw"; }
-
-        /// <inheritdoc/>
-        protected override string[] SupportedFormats { get => new string[] { ".wav" }; }
 
         /// <inheritdoc/>
         protected override void CopyFromEncoded(string encodedPath, string outPath, int startSample = 0, int endSample = 0)
@@ -41,7 +41,6 @@ namespace PhosMusicConverter.Builders
             base.CopyFromEncoded(encodedPath, outPath);
 
             // Copy encoded file's txth to output.
-            string encodedTxth = $"{encodedPath}.txth";
             File.Copy($"{encodedPath}.txth", $"{outPath}.txth");
 
             TxthHandler.UpdateTxthFile($"{outPath}.txth", startSample, endSample);
@@ -56,7 +55,6 @@ namespace PhosMusicConverter.Builders
             base.CopyFromCached(songPath, outPath);
 
             string cachedTxthPath = $@"{this.CachedFilePath(songPath)}.txth";
-            // TxthHandler.UpdateTxthFile($"{outPath}.txth", startSample, endSample);
             File.Copy(cachedTxthPath, $"{outPath}.txth");
         }
 
@@ -119,7 +117,7 @@ namespace PhosMusicConverter.Builders
         }
 
         /// <inheritdoc/>
-        protected override void ProccessEncodedSong(string encodedSong, int startSample = 0, int endSample = 0)
+        protected override void ProcessEncodedSong(string encodedSong, int startSample = 0, int endSample = 0)
         {
             TxthHandler.UpdateTxthFile($"{encodedSong}.txth", startSample, endSample);
         }
