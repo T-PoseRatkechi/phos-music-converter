@@ -16,7 +16,7 @@ namespace PhosMusicConverter.Interfaces
         void GenerateBuild(string outputDir, bool useLow);
 
         /// <summary>
-        /// Encodes the file <paramref name="songPath"/> to .raw file at <paramref name="outPath"/>.
+        /// Encodes the file <paramref name="songPath"/> to <paramref name="outPath"/>.
         /// Only encodes if the file <paramref name="songPath"/> has not been encoded before or has been edited since the last encoding.
         /// </summary>
         /// <param name="songPath">Path of file to encode.</param>

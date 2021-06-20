@@ -4,11 +4,8 @@
 namespace PhosMusicConverter.Builders
 {
     using System;
-    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-    using System.Linq;
-    using System.Threading.Tasks;
     using PhosMusicConverter.Common;
 
     /// <summary>
@@ -30,123 +27,49 @@ namespace PhosMusicConverter.Builders
         protected override string CachedDirectory { get => $@"{Directory.GetCurrentDirectory()}\cached\adpcm"; }
 
         /// <inheritdoc/>
-        public override void GenerateBuild(string outputDir, bool useLow)
+        protected override string EncodedFileExt { get => ".raw"; }
+
+        /// <inheritdoc/>
+        protected override string[] SupportedFormats { get => new string[] { ".wav" }; }
+
+        /// <inheritdoc/>
+        protected override void CopyFromEncoded(string encodedPath, string outPath, int startSample = 0, int endSample = 0)
         {
-            // Check that the encoder exists.
-            if (!File.Exists(this.EncoderPath))
-            {
-                throw new FileNotFoundException($"{Path.GetFileName(this.EncoderPath)} could not be found!", Path.GetFullPath(this.EncoderPath));
-            }
+            string fileName = Path.GetFileName(encodedPath);
+            Output.Log(LogLevel.INFO, $"{fileName}: Using alredy encoded file");
 
-            // Encode unique files to cache.
-            this.EncodeUniqueFiles(useLow);
+            base.CopyFromEncoded(encodedPath, outPath);
 
-            // Check the output directory exists, if not then create it.
-            if (!Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
+            // Copy encoded file's txth to output.
+            string encodedTxth = $"{encodedPath}.txth";
+            File.Copy($"{encodedPath}.txth", $"{outPath}.txth");
 
-            // Empty out the output folder.
-            foreach (var file in Directory.GetFiles(outputDir))
-            {
-                File.Delete(file);
-            }
-
-            int totalSongs = 0;
-
-            if (!useLow)
-            {
-                Parallel.ForEach(this.GetMusicData().songs, song =>
-                {
-                    if (song.replacementFilePath != null && song.isEnabled)
-                    {
-                        // Copy from cache encoded replacement file to build.
-                        if (!Path.GetExtension(song.replacementFilePath).ToLower().Equals(".raw"))
-                        {
-                            string cachedFileName = $"{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw";
-
-                            // copy cached raw and txth for song to output directory as the correct wave index
-                            File.Copy($@"{this.CachedDirectory}\{cachedFileName}", $@"{outputDir}\{song.waveIndex}.raw");
-                            File.Copy($@"{this.CachedDirectory}\{cachedFileName}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
-                        }
-                        else
-                        {
-                            // Copy the already encoded selected file to build.
-                            File.Copy($"{song.replacementFilePath}", $@"{outputDir}\{song.waveIndex}.raw");
-                            File.Copy($"{song.replacementFilePath}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
-
-                            // Update the copied txth's loop samples to the song's given loop samples.
-                            TxthHandler.UpdateTxthFile($@"{outputDir}\{song.waveIndex}.raw.txth", song.loopStartSample, song.loopEndSample);
-                        }
-
-                        // Increment total songs in build.
-                        totalSongs++;
-                    }
-                });
-            }
-            else
-            {
-                Output.Log(LogLevel.INFO, "Low performance mode enabled");
-
-                // Copy from cache files to the proper destination.
-                foreach (var song in this.GetMusicData().songs)
-                {
-                    // Copy to build replaced songs that are enabled.
-                    if (song.replacementFilePath != null && song.isEnabled)
-                    {
-                        // Copy from cache encoded replacement file to build.
-                        if (!Path.GetExtension(song.replacementFilePath).ToLower().Equals(".raw"))
-                        {
-                            string cachedFileName = $"{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw";
-
-                            // Copy cached raw and txth for song to output directory as the correct wave index.
-                            File.Copy($@"{this.CachedDirectory}\{cachedFileName}", $@"{outputDir}\{song.waveIndex}.raw");
-                            File.Copy($@"{this.CachedDirectory}\{cachedFileName}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
-                        }
-                        else
-                        {
-                            // Copy the already encoded selected file to build.
-                            File.Copy($"{song.replacementFilePath}", $@"{outputDir}\{song.waveIndex}.raw");
-                            File.Copy($"{song.replacementFilePath}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
-
-                            // Update the copied txth's loop samples to the song's given loop samples.
-                            TxthHandler.UpdateTxthFile($@"{outputDir}\{song.waveIndex}.raw.txth", song.loopStartSample, song.loopEndSample);
-                        }
-
-                        // Increment total songs in build.
-                        totalSongs++;
-                    }
-                }
-            }
-
-            Output.Log(LogLevel.INFO, $"Music Build generated with {totalSongs} total songs");
+            TxthHandler.UpdateTxthFile($"{outPath}.txth", startSample, endSample);
         }
 
         /// <inheritdoc/>
-        public override void EncodeSong(string songPath, string outPath, int startSample = 0, int endSample = 0)
+        protected override void CopyFromCached(string songPath, string outPath, int startSample = 0, int endSample = 0)
         {
-            // store file name for logging
             string fileName = Path.GetFileName(songPath);
+            Output.Log(LogLevel.INFO, $"{fileName}: Using cached encoded file");
 
-            // check if input file should be re-encoded
-            bool requiresEncoding = this.RequiresEncoding(songPath, outPath);
+            base.CopyFromCached(songPath, outPath);
 
-            // only update txth file if wave doesn't need to be encoded
-            if (!requiresEncoding)
-            {
-                Output.Log(LogLevel.INFO, $"{fileName}: Using cached encoded file");
-                TxthHandler.UpdateTxthFile($"{outPath}.txth", startSample, endSample);
-                return;
-            }
+            string cachedTxthPath = $@"{this.CachedFilePath(songPath)}.txth";
+            // TxthHandler.UpdateTxthFile($"{outPath}.txth", startSample, endSample);
+            File.Copy(cachedTxthPath, $"{outPath}.txth");
+        }
 
+        /// <inheritdoc/>
+        protected override void Encode(string inputFile, string outputFile, int startSample = 0, int endSample = 0)
+        {
             // File path to store temp encoded file (still has header).
-            string tempFilePath = $@"{outPath}.temp";
+            string tempFilePath = $@"{outputFile}.temp";
 
             ProcessStartInfo encodeInfo = new()
             {
                 FileName = this.EncoderPath,
-                Arguments = $@"""{songPath}"" ""{tempFilePath}""",
+                Arguments = $@"""{inputFile}"" ""{tempFilePath}""",
                 CreateNoWindow = true,
             };
 
@@ -155,9 +78,9 @@ namespace PhosMusicConverter.Builders
 
             // Load the required wave properties.
             WaveProps waveProps = default;
-            if (!Waves.LoadWaveProps(songPath, ref waveProps))
+            if (!Waves.LoadWaveProps(inputFile, ref waveProps))
             {
-                throw new ArgumentException("Problem reading the wave properties of file!", songPath);
+                throw new ArgumentException("Problem reading the wave properties of file!", inputFile);
             }
 
             // Get total number of samples from input wave.
@@ -187,47 +110,18 @@ namespace PhosMusicConverter.Builders
             }
 
             // Write txth file.
-            TxthHandler.WriteTxthFile($"{outPath}.txth", outputWaveProps, waveTotalSamples, startSample, endSample);
+            TxthHandler.WriteTxthFile($"{outputFile}.txth", outputWaveProps, waveTotalSamples, startSample, endSample);
 
-            File.WriteAllBytes($"{outPath}", outDataChunk);
+            File.WriteAllBytes($"{outputFile}", outDataChunk);
 
             // Delete temp file.
             File.Delete(tempFilePath);
         }
 
-        /// <summary>
-        /// Iterates over local music data and encodes every unique replacement file.
-        /// </summary>
-        private void EncodeUniqueFiles(bool useLow)
+        /// <inheritdoc/>
+        protected override void ProccessEncodedSong(string encodedSong, int startSample = 0, int endSample = 0)
         {
-            HashSet<Song> uniqueSongs = new(new UniqueSongsComparer());
-            foreach (var song in this.GetMusicData().songs)
-            {
-                // Add each unique replacement file in the music build, excluding already encoded .raw files.
-                if (song.replacementFilePath != null && !Path.GetExtension(song.replacementFilePath).ToLower().Equals(".raw"))
-                {
-                    uniqueSongs.Add(song);
-                }
-            }
-
-            Output.Log(LogLevel.LOG, $"Processing {uniqueSongs.Count} songs");
-
-            if (!useLow)
-            {
-                Parallel.ForEach(uniqueSongs, song =>
-                {
-                    this.EncodeSong(song.replacementFilePath, $@"{this.CachedDirectory}\{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw", song.loopStartSample, song.loopEndSample);
-                });
-            }
-            else
-            {
-                foreach (var song in uniqueSongs)
-                {
-                    this.EncodeSong(song.replacementFilePath, $@"{this.CachedDirectory}\{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw", song.loopStartSample, song.loopEndSample);
-                }
-            }
-
-            Output.Log(LogLevel.INFO, $"Processed {uniqueSongs.Count} songs");
+            TxthHandler.UpdateTxthFile($"{encodedSong}.txth", startSample, endSample);
         }
     }
 }

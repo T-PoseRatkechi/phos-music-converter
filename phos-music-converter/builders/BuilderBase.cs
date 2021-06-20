@@ -4,8 +4,10 @@
 namespace PhosMusicConverter.Builders
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
     using PhosMusicConverter.Common;
     using PhosMusicConverter.Interfaces;
 
@@ -52,11 +54,133 @@ namespace PhosMusicConverter.Builders
         /// </summary>
         protected string EncoderPath { get; init; }
 
-        /// <inheritdoc/>
-        public abstract void GenerateBuild(string outputDir, bool useLow);
+        /// <summary>
+        /// Gets file extension for file encoded by the builder's encoder.
+        /// </summary>
+        protected abstract string EncodedFileExt { get; }
+
+        /// <summary>
+        /// Gets supported input formats for builder.
+        /// </summary>
+        protected abstract string[] SupportedFormats { get; }
 
         /// <inheritdoc/>
-        public abstract void EncodeSong(string songPath, string outPath, int startSample = 0, int endSample = 0);
+        public virtual void GenerateBuild(string outputDir, bool useLow)
+        {
+            // Check that the encoder exists.
+            if (!File.Exists(this.EncoderPath))
+            {
+                throw new FileNotFoundException($"{Path.GetFileName(this.EncoderPath)} could not be found!", Path.GetFullPath(this.EncoderPath));
+            }
+
+            // Check the output directory exists, if not then create it.
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            string[] outputFiles = Directory.GetFiles(outputDir, "*.*", SearchOption.TopDirectoryOnly);
+            if (outputFiles.Length > 100)
+            {
+                throw new ArgumentException("Output directory has an unusually large amount of files! Caution!");
+            }
+
+            // Empty out the output folder.
+            foreach (var file in outputFiles)
+            {
+                File.Delete(file);
+            }
+
+            this.BuildCache(useLow);
+            this.BuildOutput(outputDir, useLow);
+        }
+
+        /// <summary>
+        /// Encodes <paramref name="songPath"/> using builder's encoder and with the specified loop points. Will only
+        /// encode the file if an encoded copy is not already cached or <paramref name="songPath"/> has been modified
+        /// since then. The encoded file is then copied to <paramref name="outPath"/>, if specified.
+        /// </summary>
+        /// <param name="songPath">Path to song file to encode.</param>
+        /// <param name="outPath">Path to output encoded file.</param>
+        /// <param name="startSample">Loop start sample.</param>
+        /// <param name="endSample">Loop end sample.</param>
+        public virtual void EncodeSong(string songPath, string outPath = null, int startSample = 0, int endSample = 0)
+        {
+            string cachedSongPath = this.CachedFilePath(songPath);
+
+            if (!this.RequiresEncoding(songPath, cachedSongPath))
+            {
+                this.ProccessEncodedSong(cachedSongPath, startSample, endSample);
+                if (outPath != null)
+                {
+                    this.CopyFromCached(songPath, outPath, startSample, endSample);
+                }
+            }
+            else
+            {
+                this.Encode(songPath, cachedSongPath, startSample, endSample);
+                this.ProccessEncodedSong(cachedSongPath, startSample, endSample);
+
+                if (outPath != null)
+                {
+                    this.CopyFromCached(songPath, outPath, startSample, endSample);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Process an encoded file, if needed.
+        /// </summary>
+        /// <param name="encodedSong">Path to encoded file.</param>
+        /// <param name="startSample">Loop start sample.</param>
+        /// <param name="endSample">Loop end sample.</param>
+        protected abstract void ProccessEncodedSong(string encodedSong, int startSample = 0, int endSample = 0);
+
+        /// <summary>
+        /// Handles copying files to output for already encoded files.
+        /// </summary>
+        /// <param name="encodedFile">Path to already encoded file.</param>
+        /// <param name="outputPath">Output path.</param>
+        /// <param name="startSample">Loop start sample.</param>
+        /// <param name="endSample">Loop end sample.</param>
+        protected virtual void CopyFromEncoded(string encodedFile, string outputPath, int startSample = 0, int endSample = 0)
+        {
+            // Copy already encoded file to output.
+            File.Copy(encodedFile, outputPath);
+        }
+
+        /// <summary>
+        /// Handles copying files to output from cached.
+        /// </summary>
+        /// <param name="songPath">Input song file path.</param>
+        /// <param name="outPath">Output file path.</param>
+        /// <param name="startSample">Loop start sample.</param>
+        /// <param name="endSample">Loop end sample.</param>
+        protected virtual void CopyFromCached(string songPath, string outPath, int startSample = 0, int endSample = 0)
+        {
+            // Copy cached encoded song to output.
+            File.Copy(this.CachedFilePath(songPath), outPath);
+        }
+
+        /// <summary>
+        /// Gets the expected cached encoded file path for the given <paramref name="file"/>.
+        /// </summary>
+        /// <param name="file">Input file.</param>
+        /// <returns>Cached file path for <paramref name="file"/>.</returns>
+        protected string CachedFilePath(string file)
+        {
+            string fileName = Path.GetFileNameWithoutExtension(file);
+            return $@"{this.CachedDirectory}\{fileName}{this.EncodedFileExt}";
+        }
+
+        /// <summary>
+        /// Encodes the <paramref name="inputFile"/> using encoder to <paramref name="outputFile"/>.
+        /// </summary>
+        /// <param name="inputFile">File to encode.</param>
+        /// <param name="outputFile">Encoded output file.</param>
+        /// <param name="startSample">Loop start sample.</param>
+        /// <param name="endSample">Loop end sample.</param>
+        protected abstract void Encode(string inputFile, string outputFile, int startSample = 0, int endSample = 0);
 
         /// <summary>
         /// Determines if <paramref name="file"/> should be encoded.
@@ -110,10 +234,147 @@ namespace PhosMusicConverter.Builders
         /// <summary>
         /// Get parsed Music Data object.
         /// </summary>
-        /// <returns>Music Data.</returns>
+        /// <returns>Builder's music data.</returns>
         protected MusicData GetMusicData()
         {
             return this.musicData;
+        }
+
+        /// <summary>
+        /// Iterates over the builder's Music Data and encodes and caches every replacement file in use.
+        /// </summary>
+        /// <param name="useLow">Use low performance mode.</param>
+        private void BuildCache(bool useLow)
+        {
+            Output.Log(LogLevel.INFO, "Building cache");
+
+            HashSet<Song> uniqueSongs = new(new UniqueSongsComparer());
+            foreach (var song in this.GetMusicData().songs)
+            {
+                // Add each unique replacement file in the music build, excluding already encoded .raw files.
+                if (song.replacementFilePath != null)
+                {
+                    if (this.FileIsSupported(song.replacementFilePath))
+                    {
+                        uniqueSongs.Add(song);
+                    }
+                }
+            }
+
+            Output.Log(LogLevel.LOG, $"Processing {uniqueSongs.Count} songs");
+
+            if (!useLow)
+            {
+                Parallel.ForEach(uniqueSongs, song =>
+                {
+                    this.EncodeSong(song.replacementFilePath, null, song.loopStartSample, song.loopEndSample);
+                });
+            }
+            else
+            {
+                foreach (var song in uniqueSongs)
+                {
+                    this.EncodeSong(song.replacementFilePath, null, song.loopStartSample, song.loopEndSample);
+                }
+            }
+
+            Output.Log(LogLevel.INFO, $"Processed {uniqueSongs.Count} songs");
+        }
+
+        /// <summary>
+        /// Output music build.
+        /// </summary>
+        /// <param name="outputDir">Directory to output files to.</param>
+        /// <param name="useLow">Use low performance mode.</param>
+        private void BuildOutput(string outputDir, bool useLow)
+        {
+            int totalSongs = 0;
+
+            if (!useLow)
+            {
+                Parallel.ForEach(this.GetMusicData().songs, song =>
+                {
+                    if (song.replacementFilePath != null && song.isEnabled)
+                    {
+                        // Copy from cache encoded replacement file to build.
+                        if (!this.FileIsEncoded(song.replacementFilePath))
+                        {
+                            this.CopyFromCached(song.replacementFilePath, $@"{outputDir}\{song.waveIndex}{this.EncodedFileExt}", song.loopStartSample, song.loopEndSample);
+                        }
+
+                        // Copy already encoded file.
+                        else if (this.FileIsEncoded(song.replacementFilePath))
+                        {
+                            // Copy the already encoded selected file to build.
+                            this.CopyFromEncoded(song.replacementFilePath, $@"{outputDir}\{song.waveIndex}{this.EncodedFileExt}", song.loopStartSample, song.loopEndSample);
+                        }
+                        else
+                        {
+                            throw new ArgumentException($"Unknown file type! File: {song.replacementFilePath}");
+                        }
+
+                        // Increment total songs in build.
+                        totalSongs++;
+                    }
+                });
+            }
+            else
+            {
+                Output.Log(LogLevel.INFO, "Low performance mode enabled");
+
+                // Copy from cache files to the proper destination.
+                foreach (var song in this.GetMusicData().songs)
+                {
+                    // Copy to build replaced songs that are enabled.
+                    if (song.replacementFilePath != null && song.isEnabled)
+                    {
+                        // Copy from cache encoded replacement file to build.
+                        if (!Path.GetExtension(song.replacementFilePath).ToLower().Equals(".raw"))
+                        {
+                            string cachedFileName = $"{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw";
+
+                            // Copy cached raw and txth for song to output directory as the correct wave index.
+                            File.Copy($@"{this.CachedDirectory}\{cachedFileName}", $@"{outputDir}\{song.waveIndex}.raw");
+                            File.Copy($@"{this.CachedDirectory}\{cachedFileName}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
+                        }
+                        else
+                        {
+                            // Copy the already encoded selected file to build.
+                            File.Copy($"{song.replacementFilePath}", $@"{outputDir}\{song.waveIndex}.raw");
+                            File.Copy($"{song.replacementFilePath}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
+
+                            // Update the copied txth's loop samples to the song's given loop samples.
+                            TxthHandler.UpdateTxthFile($@"{outputDir}\{song.waveIndex}.raw.txth", song.loopStartSample, song.loopEndSample);
+                        }
+
+                        // Increment total songs in build.
+                        totalSongs++;
+                    }
+                }
+            }
+
+            Output.Log(LogLevel.INFO, $"Music Build generated with {totalSongs} total songs");
+        }
+
+        /// <summary>
+        /// Check whether <paramref name="file"/> is already encoded to builder's encoded format.
+        /// </summary>
+        /// <param name="file">File to check.</param>
+        /// <returns>Whether <paramref name="file"/> is already in builder's encoded format.</returns>
+        private bool FileIsEncoded(string file)
+        {
+            return Path.GetExtension(file).ToLower().Equals(this.EncodedFileExt.ToLower());
+        }
+
+        /// <summary>
+        /// Check if <paramref name="file"/> is of a supported type by builder.
+        /// </summary>
+        /// <param name="file">File to check.</param>
+        /// <returns>Whether builder supports encoding <paramref name="file"/>.</returns>
+        private bool FileIsSupported(string file)
+        {
+            string fileType = Path.GetExtension(file);
+            return Array.FindIndex(this.SupportedFormats, x => x.ToLower().Equals(fileType.ToLower())) > -1;
         }
     }
 }
