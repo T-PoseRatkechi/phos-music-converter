@@ -18,7 +18,7 @@ namespace PhosMusicConverter
         private static void Main(string[] args)
         {
             Output.Log(LogLevel.INFO, "Yo dayo!");
-            Parser.Default.ParseArguments<CommandOptions.BuildOptions, CommandOptions.BatchOptions, CommandOptions.ExtractOptions, CommandOptions.BatchOptions>(args)
+            Parser.Default.ParseArguments<CommandOptions.BuildOptions, CommandOptions.BatchOptions, CommandOptions.ExtractOptions, CommandOptions.ExportOptions>(args)
                 .WithParsed<CommandOptions.BuildOptions>(o =>
                 {
                     if (o.Verbose)

@@ -80,9 +80,10 @@ namespace PhosMusicConverter.Builders
             if (!Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
+                Output.Log(LogLevel.DEBUG, $"Created output directory: {outputDir}");
             }
 
-            string[] outputFiles = Directory.GetFiles(outputDir, "*.*", SearchOption.TopDirectoryOnly);
+            string[] outputFiles = Directory.GetFiles(outputDir, "*.*", SearchOption.AllDirectories);
             if (outputFiles.Length > 100)
             {
                 throw new ArgumentException("Output directory has an unusually large amount of files! Caution!");
@@ -94,8 +95,30 @@ namespace PhosMusicConverter.Builders
                 File.Delete(file);
             }
 
+            this.BuildDirectories(outputDir);
             this.BuildCache(useLow);
             this.BuildOutput(outputDir, useLow);
+        }
+
+        private void BuildDirectories(string outputDir)
+        {
+            HashSet<string> uniqueDirectories = new();
+
+            foreach (var song in this.GetMusicData().songs)
+            {
+                string outputFile = $"{outputDir}{song.outputFilePath}";
+                string songDirectory = Path.GetDirectoryName(outputFile);
+                uniqueDirectories.Add(songDirectory);
+            }
+
+            foreach (var songDir in uniqueDirectories)
+            {
+                if (!Directory.Exists(songDir))
+                {
+                    Directory.CreateDirectory(songDir);
+                    Output.Log(LogLevel.DEBUG, $"Created sub-directory: {songDir}");
+                }
+            }
         }
 
         /// <summary>
@@ -158,20 +181,20 @@ namespace PhosMusicConverter.Builders
         protected virtual void CopyFromEncoded(string encodedFile, string outputPath, int startSample = 0, int endSample = 0)
         {
             // Copy already encoded file to output.
-            File.Copy(encodedFile, outputPath);
+            File.Copy(encodedFile, outputPath, true);
         }
 
         /// <summary>
         /// Handles copying files to output from cached.
         /// </summary>
         /// <param name="songPath">Input song file path.</param>
-        /// <param name="outPath">Output file path.</param>
+        /// <param name="outputPath">Output file path.</param>
         /// <param name="startSample">Loop start sample.</param>
         /// <param name="endSample">Loop end sample.</param>
-        protected virtual void CopyFromCached(string songPath, string outPath, int startSample = 0, int endSample = 0)
+        protected virtual void CopyFromCached(string songPath, string outputPath, int startSample = 0, int endSample = 0)
         {
             // Copy cached encoded song to output.
-            File.Copy(this.CachedFilePath(songPath), outPath);
+            File.Copy(this.CachedFilePath(songPath), outputPath, true);
         }
 
         /// <summary>
@@ -302,14 +325,14 @@ namespace PhosMusicConverter.Builders
                         // Copy from cache encoded replacement file to build.
                         if (!this.FileIsEncoded(song.replacementFilePath))
                         {
-                            this.CopyFromCached(song.replacementFilePath, $@"{outputDir}\{song.waveIndex}{this.EncodedFileExt}", song.loopStartSample, song.loopEndSample);
+                            this.CopyFromCached(song.replacementFilePath, $@"{outputDir}\{song.outputFilePath}", song.loopStartSample, song.loopEndSample);
                         }
 
                         // Copy already encoded file.
                         else if (this.FileIsEncoded(song.replacementFilePath))
                         {
                             // Copy the already encoded selected file to build.
-                            this.CopyFromEncoded(song.replacementFilePath, $@"{outputDir}\{song.waveIndex}{this.EncodedFileExt}", song.loopStartSample, song.loopEndSample);
+                            this.CopyFromEncoded(song.replacementFilePath, $@"{outputDir}\{song.outputFilePath}", song.loopStartSample, song.loopEndSample);
                         }
                         else
                         {
@@ -321,6 +344,7 @@ namespace PhosMusicConverter.Builders
                     }
                 });
             }
+            // TODO: Update sync method
             else
             {
                 Output.Log(LogLevel.INFO, "Low performance mode enabled");
@@ -328,6 +352,7 @@ namespace PhosMusicConverter.Builders
                 // Copy from cache files to the proper destination.
                 foreach (var song in this.GetMusicData().songs)
                 {
+                    /*
                     // Copy to build replaced songs that are enabled.
                     if (song.replacementFilePath != null && song.isEnabled)
                     {
@@ -337,8 +362,8 @@ namespace PhosMusicConverter.Builders
                             string cachedFileName = $"{Path.GetFileNameWithoutExtension(song.replacementFilePath)}.raw";
 
                             // Copy cached raw and txth for song to output directory as the correct wave index.
-                            File.Copy($@"{this.CachedDirectory}\{cachedFileName}", $@"{outputDir}\{song.waveIndex}.raw");
-                            File.Copy($@"{this.CachedDirectory}\{cachedFileName}.txth", $@"{outputDir}\{song.waveIndex}.raw.txth");
+                            File.Copy($@"{this.CachedDirectory}\{cachedFileName}", $@"{outputDir}\{song.outputFilePath}");
+                            File.Copy($@"{this.CachedDirectory}\{cachedFileName}.txth", $@"{outputDir}\{song.outputFilePath}.txth");
                         }
                         else
                         {
@@ -353,6 +378,7 @@ namespace PhosMusicConverter.Builders
                         // Increment total songs in build.
                         totalSongs++;
                     }
+                    */
                 }
             }
 
