@@ -132,24 +132,27 @@ namespace PhosMusicConverter.Builders
         /// <param name="endSample">Loop end sample.</param>
         public virtual void EncodeSong(string songPath, string outPath = null, int startSample = 0, int endSample = 0)
         {
-            string cachedSongPath = this.CachedFilePath(songPath);
-
-            if (!this.RequiresEncoding(songPath, cachedSongPath))
+            if (this.FileIsSupported(songPath))
             {
-                this.ProcessEncodedSong(cachedSongPath, startSample, endSample);
-                if (outPath != null)
+                string cachedSongPath = this.CachedFilePath(songPath);
+
+                if (!this.RequiresEncoding(songPath, cachedSongPath))
                 {
-                    this.CopyFromCached(songPath, outPath, startSample, endSample);
+                    this.ProcessEncodedSong(cachedSongPath, startSample, endSample);
+                    if (outPath != null)
+                    {
+                        this.CopyFromCached(songPath, outPath, startSample, endSample);
+                    }
                 }
-            }
-            else
-            {
-                this.Encode(songPath, cachedSongPath, startSample, endSample);
-                this.ProcessEncodedSong(cachedSongPath, startSample, endSample);
-
-                if (outPath != null)
+                else
                 {
-                    this.CopyFromCached(songPath, outPath, startSample, endSample);
+                    this.Encode(songPath, cachedSongPath, startSample, endSample);
+                    this.ProcessEncodedSong(cachedSongPath, startSample, endSample);
+
+                    if (outPath != null)
+                    {
+                        this.CopyFromCached(songPath, outPath, startSample, endSample);
+                    }
                 }
             }
         }
