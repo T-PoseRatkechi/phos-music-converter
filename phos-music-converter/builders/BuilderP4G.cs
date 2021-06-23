@@ -55,7 +55,7 @@ namespace PhosMusicConverter.Builders
             base.CopyFromCached(songPath, outPath);
 
             string cachedTxthPath = $@"{this.CachedFilePath(songPath)}.txth";
-            File.Copy(cachedTxthPath, $"{outPath}.txth");
+            File.Copy(cachedTxthPath, $"{outPath}.txth", true);
         }
 
         /// <inheritdoc/>
