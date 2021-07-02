@@ -26,7 +26,7 @@ namespace PhosMusicConverter.Builders
         /// <param name="gameName">Name of game the Music Builder is for.</param>
         /// <param name="musicDataPath">Path to music data JSON file.</param>
         /// <param name="encoder">Path of encoder to use.</param>
-        protected BuilderBase(string gameName, string musicDataPath, string encoder)
+        protected BuilderBase(string gameName, string musicDataPath)
         {
             // Parse music data file if given.
             if (musicDataPath != null)
@@ -34,7 +34,6 @@ namespace PhosMusicConverter.Builders
                 this.musicData = MusicDataParser.ParseMusicData(musicDataPath);
             }
 
-            this.EncoderPath = encoder;
             if (!Directory.Exists(this.CachedDirectory))
             {
                 Directory.CreateDirectory(this.CachedDirectory);
@@ -56,7 +55,7 @@ namespace PhosMusicConverter.Builders
         /// <summary>
         /// Gets path to encoder.
         /// </summary>
-        protected string EncoderPath { get; init; }
+        protected abstract string EncoderPath { get; }
 
         /// <summary>
         /// Gets cache directory for game's Music Builds.
@@ -98,27 +97,6 @@ namespace PhosMusicConverter.Builders
             this.BuildDirectories(outputDir);
             this.BuildCache(useLow);
             this.BuildOutput(outputDir, useLow);
-        }
-
-        private void BuildDirectories(string outputDir)
-        {
-            HashSet<string> uniqueDirectories = new();
-
-            foreach (var song in this.GetMusicData().songs)
-            {
-                string outputFile = $"{outputDir}{song.outputFilePath}";
-                string songDirectory = Path.GetDirectoryName(outputFile);
-                uniqueDirectories.Add(songDirectory);
-            }
-
-            foreach (var songDir in uniqueDirectories)
-            {
-                if (!Directory.Exists(songDir))
-                {
-                    Directory.CreateDirectory(songDir);
-                    Output.Log(LogLevel.DEBUG, $"Created sub-directory: {songDir}");
-                }
-            }
         }
 
         /// <summary>
@@ -266,6 +244,27 @@ namespace PhosMusicConverter.Builders
                 Output.Log(LogLevel.ERROR, ex.ToString());
                 Output.Log(LogLevel.ERROR, "Problem checking file checksums!");
                 return true;
+            }
+        }
+
+        private void BuildDirectories(string outputDir)
+        {
+            HashSet<string> uniqueDirectories = new();
+
+            foreach (var song in this.GetMusicData().songs)
+            {
+                string outputFile = $"{outputDir}{song.outputFilePath}";
+                string songDirectory = Path.GetDirectoryName(outputFile);
+                uniqueDirectories.Add(songDirectory);
+            }
+
+            foreach (var songDir in uniqueDirectories)
+            {
+                if (!Directory.Exists(songDir))
+                {
+                    Directory.CreateDirectory(songDir);
+                    Output.Log(LogLevel.DEBUG, $"Created sub-directory: {songDir}");
+                }
             }
         }
 

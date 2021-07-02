@@ -27,7 +27,7 @@ namespace PhosMusicConverter
                         Output.Log(LogLevel.LOG, "Show debug messages enabled");
                     }
 
-                    GenerateMusicBuild(o.GameName, o.MusicData, o.EncoderPath, o.OutputDirectory, o.UseLowPerformance);
+                    GenerateMusicBuild(o.GameName, o.MusicData, o.OutputDirectory, o.UseLowPerformance);
                 })
                 .WithParsed<CommandOptions.BatchOptions>(o =>
                 {
@@ -37,7 +37,7 @@ namespace PhosMusicConverter
                         Output.Log(LogLevel.LOG, "Show debug messages enabled");
                     }
 
-                    BatchEncode(o.GameName, o.FolderDirectory, o.EncoderPath, o.UseLowPerformance);
+                    BatchEncode(o.GameName, o.FolderDirectory, o.UseLowPerformance);
                 })
                 .WithParsed<CommandOptions.ExtractOptions>(o =>
                 {
@@ -57,7 +57,7 @@ namespace PhosMusicConverter
                          Output.Log(LogLevel.LOG, "Show debug messages enabled");
                      }
 
-                     Export(o.GameName, o.MusicData, o.EncoderPath, o.OutputDirectory, o.UseLowPerformance);
+                     Export(o.GameName, o.MusicData, o.OutputDirectory, o.UseLowPerformance);
                  });
         }
 
@@ -92,11 +92,11 @@ namespace PhosMusicConverter
             }
         }
 
-        private static void Export(string game, string musicDataPath, string encoder, string outputDir, bool useLow)
+        private static void Export(string game, string musicDataPath, string outputDir, bool useLow)
         {
             try
             {
-                BuilderBase musicBuilder = GetGameBuilder(game, encoder, musicDataPath);
+                BuilderBase musicBuilder = GetGameBuilder(game, musicDataPath);
                 if (musicBuilder == null)
                 {
                     return;
@@ -123,11 +123,11 @@ namespace PhosMusicConverter
             }
         }
 
-        private static void BatchEncode(string game, string inputDir, string encoder, bool useLow)
+        private static void BatchEncode(string game, string inputDir, bool useLow)
         {
             try
             {
-                BuilderBase musicBuilder = GetGameBuilder(game, encoder);
+                BuilderBase musicBuilder = GetGameBuilder(game);
                 if (musicBuilder == null)
                 {
                     return;
@@ -154,11 +154,11 @@ namespace PhosMusicConverter
             }
         }
 
-        private static void GenerateMusicBuild(string game, string musicDataPath, string encoder, string outputDir, bool useLow)
+        private static void GenerateMusicBuild(string game, string musicDataPath, string outputDir, bool useLow)
         {
             try
             {
-                BuilderBase musicBuilder = GetGameBuilder(game, encoder, musicDataPath);
+                BuilderBase musicBuilder = GetGameBuilder(game, musicDataPath);
                 if (musicBuilder == null)
                 {
                     return;
@@ -183,19 +183,19 @@ namespace PhosMusicConverter
             }
         }
 
-        private static BuilderBase GetGameBuilder(string game, string encoder, string musicDataPath = null)
+        private static BuilderBase GetGameBuilder(string game, string musicDataPath = null)
         {
             switch (game)
             {
                 case "p4g":
-                    return new BuilderP4G(musicDataPath, encoder);
+                    return new BuilderP4G(musicDataPath);
 
                 case "p5":
-                    return new BuilderP5(musicDataPath, encoder);
+                    return new BuilderP5(musicDataPath);
 
                 case "p3f":
                 case "p4":
-                    return new BuilderP3F(musicDataPath, encoder);
+                    return new BuilderP3F(musicDataPath);
 
                 default:
                     Output.Log(LogLevel.ERROR, $"Unsupported game option: {game}!");
@@ -217,9 +217,6 @@ namespace PhosMusicConverter
                 [Option('o', "output", Required = true, HelpText = "Directory to generate music build in.")]
                 public string OutputDirectory { get; set; }
 
-                [Option('e', "encoder", Required = true, HelpText = "Path of encoder to use.")]
-                public string EncoderPath { get; set; }
-
                 [Option('l', "low", Required = false, Default = false, HelpText = "Set Phos Music Converter to use less resources. Only use if Phos Music Converter has issues building normally. NOT IMPLEMENTED")]
                 public bool UseLowPerformance { get; set; }
 
@@ -235,9 +232,6 @@ namespace PhosMusicConverter
 
                 [Option('f', "folder", Required = true, HelpText = "Directory of files to encode.")]
                 public string FolderDirectory { get; set; }
-
-                [Option('e', "encoder", Required = true, HelpText = "Path of encoder to use.")]
-                public string EncoderPath { get; set; }
 
                 [Option('l', "low", Required = false, Default = false, HelpText = "Set Phos Music Converter to use less resources. Only use if Phos Music Converter has issues building normally. NOT IMPLEMENTED")]
                 public bool UseLowPerformance { get; set; }
@@ -257,9 +251,6 @@ namespace PhosMusicConverter
 
                 [Option('o', "output", Required = true, HelpText = "Directory to export music build in.")]
                 public string OutputDirectory { get; set; }
-
-                [Option('e', "encoder", Required = true, HelpText = "Path of encoder to use.")]
-                public string EncoderPath { get; set; }
 
                 [Option('l', "low", Required = false, Default = false, HelpText = "Set Phos Music Converter to use less resources. Only use if Phos Music Converter has issues building normally. NOT IMPLEMENTED")]
                 public bool UseLowPerformance { get; set; }

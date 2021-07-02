@@ -18,8 +18,8 @@ namespace PhosMusicConverter.Builders
         /// </summary>
         /// <param name="path">Path to Music Data JSON file.</param>
         /// <param name="encoder">Path to encoder.</param>
-        public BuilderP4G(string path, string encoder)
-            : base("P4G", path, encoder)
+        public BuilderP4G(string path)
+            : base("P4G", path)
         {
         }
 
@@ -31,6 +31,9 @@ namespace PhosMusicConverter.Builders
 
         /// <inheritdoc/>
         protected override string CachedDirectory { get => $@"{Directory.GetCurrentDirectory()}\cached\adpcm"; }
+
+        /// <inheritdoc/>
+        protected override string EncoderPath { get; } = Encoders.GetAdpcmPath();
 
         /// <inheritdoc/>
         protected override void CopyFromEncoded(string encodedPath, string outPath, int startSample = 0, int endSample = 0)

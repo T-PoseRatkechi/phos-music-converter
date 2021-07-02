@@ -15,8 +15,8 @@ namespace PhosMusicConverter.Builders
         /// </summary>
         /// <param name="path">Input music data JSON file.</param>
         /// <param name="encoder">Path to encoder.</param>
-        public BuilderP3F(string path, string encoder)
-            : base("Persona 3 FES/Persona 4", path, encoder)
+        public BuilderP3F(string path)
+            : base("Persona 3 FES/Persona 4", path)
         {
         }
 
@@ -28,6 +28,8 @@ namespace PhosMusicConverter.Builders
 
         /// <inheritdoc/>
         protected override string CachedDirectory => throw new NotImplementedException();
+
+        protected override string EncoderPath => throw new NotImplementedException();
 
         /// <inheritdoc/>
         public override void EncodeSong(string songPath, string outPath, int startSample = 0, int endSample = 0)
