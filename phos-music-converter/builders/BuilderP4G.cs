@@ -36,7 +36,7 @@ namespace PhosMusicConverter.Builders
         protected override void CopyFromEncoded(string encodedPath, string outPath, int startSample = 0, int endSample = 0)
         {
             string fileName = Path.GetFileName(encodedPath);
-            Output.Log(LogLevel.INFO, $"{fileName}: Using alredy encoded file");
+            Output.Log(LogLevel.INFO, $"{fileName}: Using already encoded file");
 
             base.CopyFromEncoded(encodedPath, outPath);
 

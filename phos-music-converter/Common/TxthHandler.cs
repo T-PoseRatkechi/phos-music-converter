@@ -157,6 +157,11 @@ namespace PhosMusicConverter.Common
                 Output.Log(LogLevel.WARN, $"{txthName}: Loop end sample exceeds total samples: {endSample} > {totalSamples}");
                 return false;
             }
+            else if (startSample > endSample)
+            {
+                Output.Log(LogLevel.WARN, $"{txthName}: Loop start sample exceeds loop end sample: {startSample} > {endSample}");
+                return false;
+            }
             else
             {
                 return true;
