@@ -10,10 +10,17 @@ namespace PhosMusicConverter.Common
     using System.Text;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// Contains the paths to any dependency encoders.
+    /// </summary>
     internal class Encoders
     {
         private static readonly string AdpcmPath = $@"{Directory.GetCurrentDirectory()}\dependencies\AdpcmEncode.exe";
 
+        /// <summary>
+        /// Gets the expected file path of AdpcmEncode. Throws a <c>FileNotFoundException</c> if missing.
+        /// </summary>
+        /// <returns>File path of AdpcmEncode.</returns>
         public static string GetAdpcmPath()
         {
             if (!File.Exists(AdpcmPath))

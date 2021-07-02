@@ -83,7 +83,7 @@ namespace PhosMusicConverter.Builders
             }
 
             string[] outputFiles = Directory.GetFiles(outputDir, "*.*", SearchOption.AllDirectories);
-            if (outputFiles.Length > 100)
+            if (outputFiles.Length > 200)
             {
                 throw new ArgumentException("Output directory has an unusually large amount of files! Caution!");
             }
@@ -346,9 +346,9 @@ namespace PhosMusicConverter.Builders
                     }
                 });
             }
-            // TODO: Update sync method
             else
             {
+                // TODO: Update sync method
                 Output.Log(LogLevel.INFO, "Low performance mode enabled");
 
                 // Copy from cache files to the proper destination.
