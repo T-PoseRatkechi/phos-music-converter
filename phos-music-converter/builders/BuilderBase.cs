@@ -16,24 +16,12 @@ namespace PhosMusicConverter.Builders
     internal abstract class BuilderBase
     {
         /// <summary>
-        /// Parsed Music Data object.
-        /// </summary>
-        private readonly MusicData musicData;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="BuilderBase"/> class.
         /// </summary>
         /// <param name="gameName">Name of game the Music Builder is for.</param>
-        /// <param name="musicDataPath">Path to music data JSON file.</param>
-        /// <param name="encoder">Path of encoder to use.</param>
-        protected BuilderBase(string gameName, string musicDataPath)
+        /// <param name="musicData">Music Data to build.</param>
+        protected BuilderBase(string gameName)
         {
-            // Parse music data file if given.
-            if (musicDataPath != null)
-            {
-                this.musicData = MusicDataParser.ParseMusicData(musicDataPath);
-            }
-
             if (!Directory.Exists(this.CachedDirectory))
             {
                 Directory.CreateDirectory(this.CachedDirectory);
@@ -65,9 +53,10 @@ namespace PhosMusicConverter.Builders
         /// <summary>
         /// Generates a music build in <paramref name="outputDir"/>.
         /// </summary>
+        /// <param name="musicData">Music Data to generate build from.</param>
         /// <param name="outputDir">Directory to output music build to.</param>
         /// <param name="useLow">Whether to use less resource intensive processes for generating builds.</param>
-        public virtual void GenerateBuild(string outputDir, bool useLow)
+        public virtual void GenerateBuild(MusicData musicData, string outputDir, bool useLow)
         {
             // Check that the encoder exists.
             if (!File.Exists(this.EncoderPath))
@@ -94,9 +83,9 @@ namespace PhosMusicConverter.Builders
                 File.Delete(file);
             }
 
-            this.BuildDirectories(outputDir);
-            this.BuildCache(useLow);
-            this.BuildOutput(outputDir, useLow);
+            BuildDirectories(musicData, outputDir);
+            this.BuildCache(musicData, useLow);
+            this.BuildOutput(musicData, outputDir, useLow);
         }
 
         /// <summary>
@@ -133,15 +122,6 @@ namespace PhosMusicConverter.Builders
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Get parsed Music Data object.
-        /// </summary>
-        /// <returns>Builder's music data.</returns>
-        public MusicData GetMusicData()
-        {
-            return this.musicData;
         }
 
         /// <summary>
@@ -247,11 +227,11 @@ namespace PhosMusicConverter.Builders
             }
         }
 
-        private void BuildDirectories(string outputDir)
+        private static void BuildDirectories(MusicData musicData, string outputDir)
         {
             HashSet<string> uniqueDirectories = new();
 
-            foreach (var song in this.GetMusicData().songs)
+            foreach (var song in musicData.songs)
             {
                 string outputFile = $"{outputDir}{song.outputFilePath}";
                 string songDirectory = Path.GetDirectoryName(outputFile);
@@ -272,12 +252,12 @@ namespace PhosMusicConverter.Builders
         /// Iterates over the builder's Music Data and encodes and caches every replacement file in use.
         /// </summary>
         /// <param name="useLow">Use low performance mode.</param>
-        private void BuildCache(bool useLow)
+        private void BuildCache(MusicData musicData, bool useLow)
         {
             Output.Log(LogLevel.INFO, "Building cache");
 
             HashSet<Song> uniqueSongs = new(new UniqueSongsComparer());
-            foreach (var song in this.GetMusicData().songs)
+            foreach (var song in musicData.songs)
             {
                 // Add each unique replacement file in the music build, excluding already encoded .raw files.
                 if (song.replacementFilePath != null)
@@ -314,13 +294,13 @@ namespace PhosMusicConverter.Builders
         /// </summary>
         /// <param name="outputDir">Directory to output files to.</param>
         /// <param name="useLow">Use low performance mode.</param>
-        private void BuildOutput(string outputDir, bool useLow)
+        private void BuildOutput(MusicData musicData, string outputDir, bool useLow)
         {
             int totalSongs = 0;
 
             if (!useLow)
             {
-                Parallel.ForEach(this.GetMusicData().songs, song =>
+                Parallel.ForEach(musicData.songs, song =>
                 {
                     if (song.replacementFilePath != null && song.isEnabled)
                     {
@@ -352,7 +332,7 @@ namespace PhosMusicConverter.Builders
                 Output.Log(LogLevel.INFO, "Low performance mode enabled");
 
                 // Copy from cache files to the proper destination.
-                foreach (var song in this.GetMusicData().songs)
+                foreach (var song in musicData.songs)
                 {
                     /*
                     // Copy to build replaced songs that are enabled.

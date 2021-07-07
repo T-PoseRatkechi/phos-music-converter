@@ -4,6 +4,7 @@
 namespace PhosMusicConverter.Builders
 {
     using System;
+    using PhosMusicConverter.Common;
 
     /// <summary>
     /// Music Builder for Persona 3 FES and Persona 4.
@@ -13,10 +14,8 @@ namespace PhosMusicConverter.Builders
         /// <summary>
         /// Initializes a new instance of the <see cref="BuilderP3F"/> class.
         /// </summary>
-        /// <param name="path">Input music data JSON file.</param>
-        /// <param name="encoder">Path to encoder.</param>
-        public BuilderP3F(string path)
-            : base("Persona 3 FES/Persona 4", path)
+        public BuilderP3F()
+            : base("Persona 3 FES/Persona 4")
         {
         }
 
@@ -29,6 +28,7 @@ namespace PhosMusicConverter.Builders
         /// <inheritdoc/>
         protected override string CachedDirectory => throw new NotImplementedException();
 
+        /// <inheritdoc/>
         protected override string EncoderPath => throw new NotImplementedException();
 
         /// <inheritdoc/>
@@ -38,7 +38,7 @@ namespace PhosMusicConverter.Builders
         }
 
         /// <inheritdoc/>
-        public override void GenerateBuild(string outputDir, bool useLow)
+        public override void GenerateBuild(MusicData musicData, string outputDir, bool useLow)
         {
             throw new NotImplementedException();
         }

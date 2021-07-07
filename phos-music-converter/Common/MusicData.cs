@@ -57,11 +57,6 @@ namespace PhosMusicConverter.Common
         public int loopEndSample { get; init; }
 
         /// <summary>
-        /// Gets wave index of song.
-        /// </summary>
-        // public string waveIndex { get; init; }
-
-        /// <summary>
         /// Gets the replacement output path of song.
         /// </summary>
         public string outputFilePath { get; init; }
@@ -70,10 +65,5 @@ namespace PhosMusicConverter.Common
         /// Gets extra data for song.
         /// </summary>
         public string extraData { get; init; }
-
-        /// <summary>
-        /// Gets uwu index of song.
-        /// </summary>
-        // public string uwuIndex { get; init; }
     }
 }

@@ -16,7 +16,7 @@ namespace PhosMusicConverter.Common
         /// </summary>
         /// <param name="musicDataPath">Path of file to parse.</param>
         /// <returns><paramref name="musicDataPath"/> parsed as <c>MusicData</c>.</returns>
-        public static MusicData ParseMusicData(string musicDataPath)
+        public static MusicData Parse(string musicDataPath)
         {
             string musicDataString = File.ReadAllText(musicDataPath);
             MusicData musicData = JsonSerializer.Deserialize<MusicData>(musicDataString);

@@ -96,7 +96,7 @@ namespace PhosMusicConverter
         {
             try
             {
-                BuilderBase musicBuilder = GetGameBuilder(game, musicDataPath);
+                BuilderBase musicBuilder = GetGameBuilder(game);
                 if (musicBuilder == null)
                 {
                     return;
@@ -105,7 +105,7 @@ namespace PhosMusicConverter
                 Stopwatch timer = new();
                 timer.Start();
 
-                ExportBuilder.Export(musicBuilder, outputDir, useLow);
+                ExportBuilder.Export(musicDataPath, musicBuilder, outputDir, useLow);
 
                 timer.Stop();
 
@@ -158,7 +158,9 @@ namespace PhosMusicConverter
         {
             try
             {
-                BuilderBase musicBuilder = GetGameBuilder(game, musicDataPath);
+                MusicData musicData = MusicDataParser.Parse(musicDataPath);
+
+                BuilderBase musicBuilder = GetGameBuilder(game);
                 if (musicBuilder == null)
                 {
                     return;
@@ -166,7 +168,7 @@ namespace PhosMusicConverter
 
                 Stopwatch timer = new();
                 timer.Start();
-                musicBuilder.GenerateBuild(outputDir, useLow);
+                musicBuilder.GenerateBuild(musicData, outputDir, useLow);
                 timer.Stop();
 
                 Output.Log(LogLevel.INFO, $"Completed in {timer.ElapsedMilliseconds} ms");
@@ -183,19 +185,19 @@ namespace PhosMusicConverter
             }
         }
 
-        private static BuilderBase GetGameBuilder(string game, string musicDataPath = null)
+        private static BuilderBase GetGameBuilder(string game)
         {
             switch (game)
             {
                 case "p4g":
-                    return new BuilderP4G(musicDataPath);
+                    return new BuilderP4G();
 
                 case "p5":
-                    return new BuilderP5(musicDataPath);
+                    return new BuilderP5();
 
                 case "p3f":
                 case "p4":
-                    return new BuilderP3F(musicDataPath);
+                    return new BuilderP3F();
 
                 default:
                     Output.Log(LogLevel.ERROR, $"Unsupported game option: {game}!");

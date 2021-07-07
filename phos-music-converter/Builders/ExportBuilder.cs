@@ -16,43 +16,54 @@ namespace PhosMusicConverter.Builders
         /// <summary>
         /// Export a music build's encoded files.
         /// </summary>
+        /// <param name="musicDataPath">Path of music data to export.</param>
         /// <param name="builder">Game music builder to encode files.</param>
         /// <param name="outputDir">Input directory containing waves.</param>
         /// <param name="useLow">Performance setting.</param>
-        public static void Export(BuilderBase builder, string outputDir, bool useLow)
+        public static void Export(string musicDataPath, BuilderBase builder, string outputDir, bool useLow)
         {
             Output.Log(LogLevel.INFO, "Exporting Music Build");
             Output.Log(LogLevel.INFO, $"Folder: {outputDir}");
 
-            Directory.CreateDirectory(outputDir);
+            MusicData originalMusicData = MusicDataParser.Parse(musicDataPath);
 
             HashSet<Song> uniqueSongs = new(new UniqueSongsComparer());
-            foreach (var song in builder.GetMusicData().songs)
+            foreach (var song in originalMusicData.songs)
             {
-                // Add each unique replacement file in the music build, excluding already encoded .raw files.
-                if (song.replacementFilePath != null)
+                // Add each unique replacement file in the music build.
+                if (song.replacementFilePath != null && song.isEnabled)
                 {
                     uniqueSongs.Add(song);
                 }
             }
 
-            // Encode every wave file to output.
-            if (!useLow)
+            // Create mock music data just with unique files.
+            List<Song> adjustedSongs = new();
+            foreach (var song in uniqueSongs)
             {
-                Parallel.ForEach(uniqueSongs, song =>
+                // Adjusted output file path for song to export folder and as encoded.
+                string newOutputFilePath = $@"\{Path.GetFileNameWithoutExtension(song.replacementFilePath)}{builder.EncodedFileExt}";
+
+                adjustedSongs.Add(new Song()
                 {
-                    builder.EncodeSong(song.replacementFilePath, $@"{outputDir}\{Path.GetFileNameWithoutExtension(song.replacementFilePath)}{builder.EncodedFileExt}");
+                    id = null,
+                    isEnabled = true,
+                    name = null,
+                    originalFile = null,
+                    replacementFilePath = song.replacementFilePath,
+                    loopStartSample = song.loopStartSample,
+                    loopEndSample = song.loopEndSample,
+                    outputFilePath = newOutputFilePath,
+                    extraData = song.extraData,
                 });
             }
-            else
-            {
-                foreach (var song in uniqueSongs)
-                {
-                    builder.EncodeSong(song.replacementFilePath, $@"{outputDir}\{Path.GetFileNameWithoutExtension(song.replacementFilePath)}{builder.EncodedFileExt}");
-                }
-            }
 
-            Output.Log(LogLevel.INFO, $"Output: {uniqueSongs.Count} files to {outputDir}");
+            MusicData mockMusicData = new() { songs = adjustedSongs.ToArray() };
+
+            // Build mock music data.
+            builder.GenerateBuild(mockMusicData, outputDir, useLow);
+
+            Output.Log(LogLevel.INFO, $"Exported {uniqueSongs.Count} files to {outputDir}");
         }
     }
 }

@@ -16,10 +16,8 @@ namespace PhosMusicConverter.Builders
         /// <summary>
         /// Initializes a new instance of the <see cref="BuilderP4G"/> class.
         /// </summary>
-        /// <param name="path">Path to Music Data JSON file.</param>
-        /// <param name="encoder">Path to encoder.</param>
-        public BuilderP4G(string path)
-            : base("P4G", path)
+        public BuilderP4G()
+            : base("P4G")
         {
         }
 
