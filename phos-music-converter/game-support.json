@@ -1,0 +1,29 @@
+{
+  "games": [
+    {
+      "name": "Persona 4 Golden",
+      "encodedFormat": ".raw",
+      "supportedFiletypes": [ ".wav", ".raw" ]
+    },
+    {
+      "name": "Persona 5",
+      "encodedFormat": null,
+      "supportedFiletypes": []
+    },
+    {
+      "name": "Persona 3 FES",
+      "encodedFormat": null,
+      "supportedFiletypes": []
+    },
+    {
+      "name": "Persona 4",
+      "encodedFormat": null,
+      "supportedFiletypes": []
+    },
+    {
+      "name": "Kingdom Hearts 3",
+      "encodedFormat": null,
+      "supportedFiletypes": []
+    }
+  ]
+}
