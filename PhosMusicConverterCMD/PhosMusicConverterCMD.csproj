@@ -12,10 +12,33 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="stylecop.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="stylecop.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="StyleCop.Analyzers.Unstable" Version="1.2.0.333">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PhosLibrary\PhosLibrary.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="game-support.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if $(ConfigurationName) == Release robocopy $(OutDir) $(ProjectDir)..\release-build /s /e" />
+  </Target>
 
 </Project>
