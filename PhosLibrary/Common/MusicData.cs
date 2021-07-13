@@ -1,14 +1,14 @@
 ﻿// Copyright (c) T-Pose Ratkechi. All rights reserved.
 // Licensed under the GNU GPLv3 license. See LICENSE file in the project root for full license information.
 
-namespace PhosMusicConverter.Common
+namespace PhosLibrary.Common
 {
 #pragma warning disable SA1300, IDE1006
 
     /// <summary>
     /// Music Data object struct.
     /// </summary>
-    internal struct MusicData
+    public struct MusicData
     {
         /// <summary>
         /// Gets the list of <c>Song</c>s of <c>MusicData</c>.
@@ -19,7 +19,7 @@ namespace PhosMusicConverter.Common
     /// <summary>
     /// Song object struct.
     /// </summary>
-    internal struct Song
+    public struct Song
     {
         /// <summary>
         /// Gets song ID.

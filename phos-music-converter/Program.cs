@@ -1,14 +1,14 @@
 ﻿// Copyright (c) T-Pose Ratkechi. All rights reserved.
 // Licensed under the GNU GPLv3 license. See LICENSE file in the project root for full license information.
 
-namespace PhosMusicConverter
+namespace PhosLibrary
 {
     using System;
     using System.Diagnostics;
     using System.IO;
     using CommandLine;
-    using PhosMusicConverter.Builders;
-    using PhosMusicConverter.Common;
+    using PhosLibrary.Builders;
+    using PhosLibrary.Common;
 
     /// <summary>
     /// Phos Music Converter Main Class.

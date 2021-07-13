@@ -1,7 +1,7 @@
 ﻿// Copyright (c) T-Pose Ratkechi. All rights reserved.
 // Licensed under the GNU GPLv3 license. See LICENSE file in the project root for full license information.
 
-namespace PhosMusicConverter.Common
+namespace PhosLibrary.Common
 {
     using System;
     using System.Collections.Generic;

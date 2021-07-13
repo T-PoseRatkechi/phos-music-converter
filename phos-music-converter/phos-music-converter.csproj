@@ -28,6 +28,9 @@
     <AdditionalFiles Include="stylecop.json" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PhosLibrary\PhosLibrary.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="game-support.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

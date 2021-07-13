@@ -1,29 +1,29 @@
 ﻿// Copyright (c) T-Pose Ratkechi. All rights reserved.
 // Licensed under the GNU GPLv3 license. See LICENSE file in the project root for full license information.
 
-namespace PhosMusicConverter.Builders
+namespace PhosLibrary.Builders.Music
 {
     using System;
-    using PhosMusicConverter.Common;
+    using PhosLibrary.Common;
 
     /// <summary>
-    /// Music Builder for Persona 5.
+    /// Music Builder for Persona 3 FES and Persona 4.
     /// </summary>
-    internal class BuilderP5 : BuilderBase
+    internal class BuilderP3F : BuilderBase
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BuilderP5"/> class. Generates a Music Build for Persona 5.
+        /// Initializes a new instance of the <see cref="BuilderP3F"/> class.
         /// </summary>
-        public BuilderP5()
-            : base("Persona 5")
+        public BuilderP3F()
+            : base("Persona 3 FES/Persona 4")
         {
         }
 
         /// <inheritdoc/>
-        public override string EncodedFileExt => throw new NotImplementedException();
+        public override string EncodedFileExt { get => throw new NotImplementedException(); }
 
         /// <inheritdoc/>
-        public override string[] SupportedFormats => throw new NotImplementedException();
+        public override string[] SupportedFormats { get => throw new NotImplementedException(); }
 
         /// <inheritdoc/>
         protected override string CachedDirectory => throw new NotImplementedException();
