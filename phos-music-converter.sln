@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "phos-music-converter", "phos-music-converter.csproj", "{0A293B20-A89C-427A-9CBB-346F2B516A34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "phos-music-converter", "phos-music-converter\phos-music-converter.csproj", "{0A293B20-A89C-427A-9CBB-346F2B516A34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhosLibrary", "..\PhosLibrary\PhosLibrary.csproj", "{EF65547C-1F6F-4A02-89D5-CD51979F714A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhosLibrary", "PhosLibrary\PhosLibrary.csproj", "{EF65547C-1F6F-4A02-89D5-CD51979F714A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
