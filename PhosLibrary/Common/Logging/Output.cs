@@ -1,7 +1,7 @@
 ﻿// Copyright (c) T-Pose Ratkechi. All rights reserved.
 // Licensed under the GNU GPLv3 license. See LICENSE file in the project root for full license information.
 
-namespace PhosLibrary.Common
+namespace PhosLibrary.Common.Logging
 {
     using System;
 
@@ -39,7 +39,7 @@ namespace PhosLibrary.Common
     /// <summary>
     /// Wrapper of Console.WriteLine to log messages with levels.
     /// </summary>
-    internal class Output
+    public class Output
     {
         /// <summary>
         /// Gets or sets a value indicating whether to display debug messages.

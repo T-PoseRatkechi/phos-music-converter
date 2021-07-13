@@ -4,12 +4,12 @@
 namespace PhosLibrary.Builders.Music
 {
     using System;
-    using PhosLibrary.Common;
+    using PhosLibrary.Common.MusicData;
 
     /// <summary>
     /// Music Builder for Persona 5.
     /// </summary>
-    internal class BuilderP5 : BuilderBase
+    internal class BuilderP5 : MusicBuilder
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BuilderP5"/> class. Generates a Music Build for Persona 5.

@@ -6,6 +6,7 @@ namespace PhosLibrary.Common
     using System;
     using System.IO;
     using System.Text;
+    using PhosLibrary.Common.Logging;
 
     /// <summary>
     /// Useful functions related txth files.

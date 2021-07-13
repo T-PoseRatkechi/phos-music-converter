@@ -7,8 +7,9 @@ namespace PhosLibrary
     using System.Diagnostics;
     using System.IO;
     using CommandLine;
-    using PhosLibrary.Builders;
-    using PhosLibrary.Common;
+    using PhosLibrary.Common.Logging;
+    using PhosLibrary.Common.MusicData;
+    using PhosLibrary.Games;
 
     /// <summary>
     /// Phos Music Converter Main Class.
@@ -47,7 +48,7 @@ namespace PhosLibrary
                         Output.Log(LogLevel.LOG, "Show debug messages enabled");
                     }
 
-                    ExtractMusic(o.ExtractFile, o.OutputDirectory);
+                    ExtractMusic(o.GameName, o.ExtractFile, o.OutputDirectory);
                 })
                 .WithParsed<CommandOptions.ExportOptions>(o =>
                  {
@@ -61,24 +62,12 @@ namespace PhosLibrary
                  });
         }
 
-        private static void ExtractMusic(string inputFile, string outputDir)
+        private static void ExtractMusic(string game, string inputFile, string outputDir)
         {
             try
             {
-                string inputFileType = Path.GetExtension(inputFile).ToLower();
-                switch (inputFileType)
-                {
-                    case ".xwb":
-                        Output.Log(LogLevel.INFO, "Extracting music from XWB");
-                        Output.Log(LogLevel.INFO, "Uses code from unxwb by Luigi Auriemma.\nLicensed under the GNU GPLv3 license. See unxwb.LICENSE file in the project root for full license information.");
-                        XwbUtils.ExtractSongs(inputFile, outputDir);
-                        Output.Log(LogLevel.INFO, "Finished extracting music from XWB");
-                        break;
-
-                    default:
-                        Output.Log(LogLevel.ERROR, $"Unrecognized file type: {inputFileType}");
-                        break;
-                }
+                IGameMusic gameMusic = GetGameMusic(game);
+                gameMusic.Extract(inputFile, outputDir);
             }
             catch (FileNotFoundException ex)
             {
@@ -96,16 +85,18 @@ namespace PhosLibrary
         {
             try
             {
-                BuilderBase musicBuilder = GetGameBuilder(game);
-                if (musicBuilder == null)
+                IGameMusic gameMusic = GetGameMusic(game);
+                if (gameMusic == null)
                 {
                     return;
                 }
 
+                MusicData musicData = MusicDataParser.Parse(musicDataPath);
+
                 Stopwatch timer = new();
                 timer.Start();
 
-                ExportBuilder.Export(musicDataPath, musicBuilder, outputDir, useLow);
+                gameMusic.Export(musicData, outputDir, useLow);
 
                 timer.Stop();
 
@@ -127,8 +118,8 @@ namespace PhosLibrary
         {
             try
             {
-                BuilderBase musicBuilder = GetGameBuilder(game);
-                if (musicBuilder == null)
+                IGameMusic gameMusic = GetGameMusic(game);
+                if (gameMusic == null)
                 {
                     return;
                 }
@@ -136,7 +127,7 @@ namespace PhosLibrary
                 Stopwatch timer = new();
                 timer.Start();
 
-                BatchBuilder.Batch(musicBuilder, inputDir, useLow);
+                gameMusic.Batch(inputDir, useLow);
 
                 timer.Stop();
 
@@ -158,17 +149,18 @@ namespace PhosLibrary
         {
             try
             {
-                MusicData musicData = MusicDataParser.Parse(musicDataPath);
-
-                BuilderBase musicBuilder = GetGameBuilder(game);
-                if (musicBuilder == null)
+                IGameMusic gameMusic = GetGameMusic(game);
+                if (gameMusic == null)
                 {
                     return;
                 }
 
+                MusicData musicData = MusicDataParser.Parse(musicDataPath);
+
                 Stopwatch timer = new();
+
                 timer.Start();
-                musicBuilder.GenerateBuild(musicData, outputDir, useLow);
+                gameMusic.Build(musicData, outputDir, useLow);
                 timer.Stop();
 
                 Output.Log(LogLevel.INFO, $"Completed in {timer.ElapsedMilliseconds} ms");
@@ -185,22 +177,22 @@ namespace PhosLibrary
             }
         }
 
-        private static BuilderBase GetGameBuilder(string game)
+        private static IGameMusic GetGameMusic(string gameFlag)
         {
-            switch (game)
+            switch (gameFlag)
             {
                 case "p4g":
-                    return new BuilderP4G();
+                    return new MusicP4G();
 
                 case "p5":
-                    return new BuilderP5();
+                    return new MusicP5();
 
                 case "p3f":
                 case "p4":
-                    return new BuilderP3F();
+                    return new MusicP3F();
 
                 default:
-                    Output.Log(LogLevel.ERROR, $"Unsupported game option: {game}!");
+                    Output.Log(LogLevel.ERROR, $"Unsupported game option: {gameFlag}!");
                     return null;
             }
         }
@@ -264,6 +256,9 @@ namespace PhosLibrary
             [Verb("extract", HelpText = "Extract songs from supported file types.")]
             public class ExtractOptions
             {
+                [Option('g', "game", Required = true, HelpText = "Set what game to extract music for. Options: p4g, p5, p3f, and p4.")]
+                public string GameName { get; set; }
+
                 [Option('i', "input", Required = true, HelpText = "Path of file to extract from.")]
                 public string ExtractFile { get; set; }
 

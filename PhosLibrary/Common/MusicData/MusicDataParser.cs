@@ -1,7 +1,7 @@
 ﻿// Copyright (c) T-Pose Ratkechi. All rights reserved.
 // Licensed under the GNU GPLv3 license. See LICENSE file in the project root for full license information.
 
-namespace PhosLibrary.Common
+namespace PhosLibrary.Common.MusicData
 {
     using System.IO;
     using System.Text.Json;
@@ -9,7 +9,7 @@ namespace PhosLibrary.Common
     /// <summary>
     /// Parser class for Music Data JSON files.
     /// </summary>
-    internal class MusicDataParser
+    public class MusicDataParser
     {
         /// <summary>
         /// Parses adn returns the file at <paramref name="musicDataPath"/> as a <c>MusicData</c> object.

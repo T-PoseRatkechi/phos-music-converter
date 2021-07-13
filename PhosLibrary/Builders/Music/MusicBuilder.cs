@@ -9,18 +9,20 @@ namespace PhosLibrary.Builders.Music
     using System.Linq;
     using System.Threading.Tasks;
     using PhosLibrary.Common;
+    using PhosLibrary.Common.Logging;
+    using PhosLibrary.Common.MusicData;
 
     /// <summary>
     /// Base class for Music Builders.
     /// </summary>
-    internal abstract class BuilderBase
+    public abstract class MusicBuilder
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BuilderBase"/> class.
+        /// Initializes a new instance of the <see cref="MusicBuilder"/> class.
         /// </summary>
         /// <param name="gameName">Name of game the Music Builder is for.</param>
         /// <param name="musicData">Music Data to build.</param>
-        protected BuilderBase(string gameName)
+        protected MusicBuilder(string gameName)
         {
             if (!Directory.Exists(this.CachedDirectory))
             {

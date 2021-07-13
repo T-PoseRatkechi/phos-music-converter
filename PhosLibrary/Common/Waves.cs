@@ -6,6 +6,7 @@ namespace PhosLibrary.Common
     using System;
     using System.IO;
     using System.Linq;
+    using PhosLibrary.Common.Logging;
 
     /// <summary>
     /// Class containing required functions related to wave files.

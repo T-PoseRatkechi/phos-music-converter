@@ -5,8 +5,9 @@ namespace PhosLibrary.Builders
 {
     using System.Collections.Generic;
     using System.IO;
-    using System.Threading.Tasks;
-    using PhosLibrary.Common;
+    using PhosLibrary.Builders.Music;
+    using PhosLibrary.Common.Logging;
+    using PhosLibrary.Common.MusicData;
 
     /// <summary>
     /// Utility functions for export stuff.
@@ -16,19 +17,17 @@ namespace PhosLibrary.Builders
         /// <summary>
         /// Export a music build's encoded files.
         /// </summary>
-        /// <param name="musicDataPath">Path of music data to export.</param>
+        /// <param name="musicData">Music data to export.</param>
         /// <param name="builder">Game music builder to encode files.</param>
         /// <param name="outputDir">Input directory containing waves.</param>
         /// <param name="useLow">Performance setting.</param>
-        public static void Export(string musicDataPath, BuilderBase builder, string outputDir, bool useLow)
+        public static void Export(MusicData musicData, MusicBuilder builder, string outputDir, bool useLow)
         {
             Output.Log(LogLevel.INFO, "Exporting Music Build");
             Output.Log(LogLevel.INFO, $"Folder: {outputDir}");
 
-            MusicData originalMusicData = MusicDataParser.Parse(musicDataPath);
-
             HashSet<Song> uniqueSongs = new(new UniqueSongsComparer());
-            foreach (var song in originalMusicData.songs)
+            foreach (var song in musicData.songs)
             {
                 // Add each unique replacement file in the music build.
                 if (song.replacementFilePath != null && song.isEnabled)

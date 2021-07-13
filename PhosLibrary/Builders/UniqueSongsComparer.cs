@@ -4,7 +4,7 @@
 namespace PhosLibrary.Builders
 {
     using System.Collections.Generic;
-    using PhosLibrary.Common;
+    using PhosLibrary.Common.MusicData;
 
     /// <summary>
     /// Comparer class for generating list of unique songs to be encoded.

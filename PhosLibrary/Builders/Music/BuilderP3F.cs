@@ -4,12 +4,12 @@
 namespace PhosLibrary.Builders.Music
 {
     using System;
-    using PhosLibrary.Common;
+    using PhosLibrary.Common.MusicData;
 
     /// <summary>
     /// Music Builder for Persona 3 FES and Persona 4.
     /// </summary>
-    internal class BuilderP3F : BuilderBase
+    internal class BuilderP3F : MusicBuilder
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BuilderP3F"/> class.

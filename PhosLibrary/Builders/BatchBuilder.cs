@@ -5,7 +5,8 @@ namespace PhosLibrary.Builders
 {
     using System.IO;
     using System.Threading.Tasks;
-    using PhosLibrary.Common;
+    using PhosLibrary.Builders.Music;
+    using PhosLibrary.Common.Logging;
 
     /// <summary>
     /// Utility functions for batch stuff.
@@ -18,7 +19,7 @@ namespace PhosLibrary.Builders
         /// <param name="builder">Game music builder to encode files.</param>
         /// <param name="inputDir">Input directory containing waves.</param>
         /// <param name="useLow">Performance setting.</param>
-        public static void Batch(BuilderBase builder, string inputDir, bool useLow)
+        public static void Batch(MusicBuilder builder, string inputDir, bool useLow)
         {
             Output.Log(LogLevel.INFO, "Batch Encoding");
             Output.Log(LogLevel.INFO, $"Folder: {inputDir}");

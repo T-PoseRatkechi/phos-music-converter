@@ -7,11 +7,12 @@ namespace PhosLibrary.Builders.Music
     using System.Diagnostics;
     using System.IO;
     using PhosLibrary.Common;
+    using PhosLibrary.Common.Logging;
 
     /// <summary>
     /// Music Builder for Persona 4 Golden.
     /// </summary>
-    internal class BuilderP4G : BuilderBase
+    internal class BuilderP4G : MusicBuilder
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BuilderP4G"/> class.

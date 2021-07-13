@@ -7,7 +7,7 @@
 // Licensed under the GNU GPLv3 license. See unxwb.LICENSE file in the project root for full license information.
 // Changes made: very poorly re-created to get just the entries needed from the XWB.
 
-namespace PhosLibrary.Common
+namespace PhosLibrary.Common.Extracting
 #pragma warning restore SA1515 // Single-line comment should be preceded by blank line
 {
     using System;
@@ -15,6 +15,7 @@ namespace PhosLibrary.Common
     using System.Linq;
     using System.Runtime.InteropServices;
     using System.Text;
+    using PhosLibrary.Common.Logging;
 
     internal class XwbUtils
     {

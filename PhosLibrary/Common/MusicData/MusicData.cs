@@ -1,7 +1,7 @@
 ﻿// Copyright (c) T-Pose Ratkechi. All rights reserved.
 // Licensed under the GNU GPLv3 license. See LICENSE file in the project root for full license information.
 
-namespace PhosLibrary.Common
+namespace PhosLibrary.Common.MusicData
 {
 #pragma warning disable SA1300, IDE1006
 
