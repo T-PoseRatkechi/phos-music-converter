@@ -73,19 +73,17 @@ namespace PhosLibrary.Builders.Music
                 Output.Log(LogLevel.DEBUG, $"Created output directory: {outputDir}");
             }
 
-            string[] outputFiles = Directory.GetFiles(outputDir, "*.*", SearchOption.AllDirectories);
-            if (outputFiles.Length > 200)
-            {
-                throw new ArgumentException("Output directory has an unusually large amount of files! Caution!");
-            }
-
-            // Empty out the output folder.
-            foreach (var file in outputFiles)
-            {
-                File.Delete(file);
-            }
-
+            // Build all expected directories first because catching
+            // the DirectoryNotFoundEx is expensive for non-existing files.
             BuildDirectories(musicData, outputDir);
+
+            // Delete any expected output files from music data.
+            foreach (var song in musicData.songs)
+            {
+                var expectedOutputFile = Path.Join(outputDir, song.outputFilePath);
+                File.Delete(expectedOutputFile);
+            }
+
             this.BuildCache(musicData, useLow);
             this.BuildOutput(musicData, outputDir, useLow);
         }
