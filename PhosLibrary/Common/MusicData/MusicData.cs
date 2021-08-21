@@ -13,7 +13,7 @@ namespace PhosLibrary.Common.MusicData
         /// <summary>
         /// Gets the list of <c>Song</c>s of <c>MusicData</c>.
         /// </summary>
-        public Song[] songs { get; init; }
+        public Song[] songs { get; set; }
     }
 
     /// <summary>
@@ -24,46 +24,46 @@ namespace PhosLibrary.Common.MusicData
         /// <summary>
         /// Gets song ID.
         /// </summary>
-        public string id { get; init; }
+        public string id { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the song is enabled for replacing.
         /// </summary>
-        public bool isEnabled { get; init; }
+        public bool isEnabled { get; set; }
 
         /// <summary>
         /// Gets song name.
         /// </summary>
-        public string name { get; init; }
+        public string name { get; set; }
 
         /// <summary>
         /// Gets original file name.
         /// </summary>
-        public string originalFile { get; init; }
+        public string originalFile { get; set; }
 
         /// <summary>
         /// Gets path to the replacement file.
         /// </summary>
-        public string replacementFilePath { get; init; }
+        public string replacementFilePath { get; set; }
 
         /// <summary>
         /// Gets loop start sample.
         /// </summary>
-        public int loopStartSample { get; init; }
+        public int loopStartSample { get; set; }
 
         /// <summary>
         /// Gets loop end sample.
         /// </summary>
-        public int loopEndSample { get; init; }
+        public int loopEndSample { get; set; }
 
         /// <summary>
         /// Gets the replacement output path of song.
         /// </summary>
-        public string outputFilePath { get; init; }
+        public string outputFilePath { get; set; }
 
         /// <summary>
         /// Gets extra data for song.
         /// </summary>
-        public string extraData { get; init; }
+        public string extraData { get; set; }
     }
 }
