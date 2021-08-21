@@ -43,7 +43,7 @@ namespace PhosLibrary.Builders.Music
             base.CopyFromEncoded(encodedPath, outPath);
 
             // Copy encoded file's txth to output.
-            File.Copy($"{encodedPath}.txth", $"{outPath}.txth");
+            File.Copy($"{encodedPath}.txth", $"{outPath}.txth", true);
 
             TxthHandler.UpdateTxthFile($"{outPath}.txth", startSample, endSample);
         }
