@@ -15,7 +15,9 @@ namespace PhosLibrary.Common
     /// </summary>
     internal class Encoders
     {
-        private static readonly string AdpcmPath = $@"{Directory.GetCurrentDirectory()}\dependencies\AdpcmEncode.exe";
+        private static readonly string DependenciesFolder = Path.Join(Path.Join(Directory.GetCurrentDirectory(), "dependencies"));
+        private static readonly string AdpcmPath = Path.Join(DependenciesFolder, "AdpcmEncode.exe");
+        private static readonly string AtomEncPath = Path.Join(DependenciesFolder, "CriEncoder", "criatomencd.exe");
 
         /// <summary>
         /// Gets the expected file path of AdpcmEncode. Throws a <c>FileNotFoundException</c> if missing.
@@ -25,12 +27,25 @@ namespace PhosLibrary.Common
         {
             if (!File.Exists(AdpcmPath))
             {
-                throw new FileNotFoundException("AdpcmEncode.exe could not be found!", AdpcmPath);
+                throw new FileNotFoundException("AdpcmEncode.exe could not be found.", AdpcmPath);
             }
-            else
+
+            return AdpcmPath;
+        }
+
+        /// <summary>
+        /// Gets the expected file path of criatomencd. Throws a <c>FileNotFoundException</c> if missing.
+        /// </summary>
+        /// <returns>File path of criatomencd.</returns>
+        public static string GetAtomPath()
+        {
+            // TODO: Check if required atom dlls also exist.
+            if (!File.Exists(AtomEncPath))
             {
-                return AdpcmPath;
+                throw new FileNotFoundException("criatomencd.exe could not be found.", AtomEncPath);
             }
+
+            return AtomEncPath;
         }
     }
 }

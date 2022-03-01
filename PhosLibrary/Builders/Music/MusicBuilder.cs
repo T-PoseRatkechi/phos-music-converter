@@ -103,7 +103,7 @@ namespace PhosLibrary.Builders.Music
             {
                 string cachedSongPath = this.CachedFilePath(songPath);
 
-                if (!this.RequiresEncoding(songPath, cachedSongPath))
+                if (!this.RequiresEncoding(songPath, cachedSongPath, startSample, endSample))
                 {
                     this.ProcessEncodedSong(cachedSongPath, startSample, endSample);
                     if (outPath != null)
@@ -179,22 +179,24 @@ namespace PhosLibrary.Builders.Music
         protected abstract void Encode(string inputFile, string outputFile, int startSample = 0, int endSample = 0);
 
         /// <summary>
-        /// Determines if <paramref name="file"/> should be encoded.
-        /// Checks if <paramref name="file"/> has been encoded before, whether it has been cached,
-        /// and whether <paramref name="file"/> has been edited since it was originally cached.
+        /// Determines if <paramref name="inputFile"/> should be encoded.
+        /// Checks if <paramref name="inputFile"/> has been encoded before, whether it has been cached,
+        /// and whether <paramref name="inputFile"/> has been edited since it was originally cached.
         /// </summary>
-        /// <param name="file">File to determine if it requires encoding.</param>
-        /// <param name="outfile">Expected output file of the encoded <paramref name="file"/>.</param>
-        /// <returns>Whether <paramref name="file"/> should be encoded.</returns>
-        protected bool RequiresEncoding(string file, string outfile)
+        /// <param name="inputFile">File to determine if it requires encoding.</param>
+        /// <param name="outFile">Expected output file of the encoded <paramref name="inputFile"/>.</param>
+        /// <param name="startSample">Loop start sample.</param>
+        /// <param name="endSample">Loop end sample.</param>
+        /// <returns>Whether <paramref name="inputFile"/> should be encoded.</returns>
+        protected virtual bool RequiresEncoding(string inputFile, string outFile, int startSample, int endSample)
         {
             // Get currently saved checksum of file.
-            byte[] savedSum = ChecksumUtils.GetSavedChecksum(file, this.CachedDirectory);
+            byte[] savedSum = ChecksumUtils.GetSavedChecksum(inputFile, this.CachedDirectory);
 
             // Outfile doesn't even exist.
-            if (!File.Exists(outfile))
+            if (!File.Exists(outFile))
             {
-                Output.Log(LogLevel.DEBUG, $"Encoded .raw file missing. File wil be encoded. File: {file}");
+                Output.Log(LogLevel.DEBUG, $"Encoded .raw file missing. File wil be encoded. File: {inputFile}");
                 return true;
             }
 
@@ -203,19 +205,19 @@ namespace PhosLibrary.Builders.Music
                 // File had no saved checksum, meaning it's a new file.
                 if (savedSum == null)
                 {
-                    Output.Log(LogLevel.DEBUG, $"New file. File Will be encoded File: {file}");
+                    Output.Log(LogLevel.DEBUG, $"New file. File Will be encoded File: {inputFile}");
                     return true;
                 }
 
                 // Check if file's current sum still matches saved sum.
-                if (savedSum.SequenceEqual(ChecksumUtils.GetChecksum(file)))
+                if (savedSum.SequenceEqual(ChecksumUtils.GetChecksum(inputFile)))
                 {
-                    Output.Log(LogLevel.DEBUG, $"Saved checksum matches file. Encoding not required. File: {file}");
+                    Output.Log(LogLevel.DEBUG, $"Saved checksum matches file. Encoding not required. File: {inputFile}");
                     return false;
                 }
                 else
                 {
-                    Output.Log(LogLevel.DEBUG, $"Saved checksum doesn't match file. Re-encoding required. File: {file}");
+                    Output.Log(LogLevel.DEBUG, $"Saved checksum doesn't match file. Re-encoding required. File: {inputFile}");
                     return true;
                 }
             }

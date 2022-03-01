@@ -15,14 +15,14 @@
     {
       "name": "Persona 3 FES",
       "flag": "p3f",
-      "encodedFormat": null,
-      "supportedFiletypes": []
+      "encodedFormat": ".adx",
+      "supportedFiletypes": [".wav"]
     },
     {
       "name": "Persona 4",
       "flag": "p4",
-      "encodedFormat": null,
-      "supportedFiletypes": []
+      "encodedFormat": ".adx",
+      "supportedFiletypes": [".wav"]
     },
     {
       "name": "Kingdom Hearts 3",
