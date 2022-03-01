@@ -3,6 +3,7 @@
 
 namespace PhosLibrary.Builders.Music
 {
+    using System;
     using System.Diagnostics;
     using System.IO;
     using PhosLibrary.Common;
@@ -39,7 +40,7 @@ namespace PhosLibrary.Builders.Music
             ProcessStartInfo encodeInfo = new()
             {
                 FileName = this.EncoderPath,
-                Arguments = $@"""{inputFile}"" ""{outputFile}"" -codec=ADX {FormatLoopArgs(startSample, endSample)}",
+                Arguments = $@"""{inputFile}"" ""{outputFile}"" -codec=ADX -rate=48000 {FormatLoopArgs(startSample, endSample)}",
                 CreateNoWindow = true,
             };
 
@@ -64,34 +65,6 @@ namespace PhosLibrary.Builders.Music
         {
         }
 
-        private bool HasLoopChanged(string inputFile, int startSample, int endSample)
-        {
-            string loopFile = Path.Join(this.CachedDirectory, $"{Path.GetFileName(inputFile)}.loop");
-
-            if (!File.Exists(loopFile))
-            {
-                File.WriteAllText(loopFile, $"{startSample}\n{endSample}");
-                return true;
-            }
-
-            string[] loopLines = File.ReadAllLines(loopFile);
-
-            int prevStart = int.Parse(loopLines[0]);
-            int prevEnd = int.Parse(loopLines[1]);
-
-            if (prevStart != startSample || prevEnd != endSample)
-            {
-                Output.Log(LogLevel.DEBUG, $"{Path.GetFileName(inputFile)}: Loop points have changed. Re-encoding...");
-                File.WriteAllText(loopFile, $"{startSample}\n{endSample}");
-                return true;
-            }
-            else
-            {
-                Output.Log(LogLevel.DEBUG, $"{Path.GetFileName(inputFile)}: Loop points have not changed.");
-                return false;
-            }
-        }
-
         private static string FormatLoopArgs(int start, int end)
         {
             // Loop all (probably?)
@@ -104,6 +77,39 @@ namespace PhosLibrary.Builders.Music
             else
             {
                 return $"-lps={start} -lpe={end} -nodelterm";
+            }
+        }
+
+        private bool HasLoopChanged(string inputFile, int startSample, int endSample)
+        {
+            string loopFile = Path.Join(this.CachedDirectory, $"{Path.GetFileName(inputFile)}.phos");
+
+            // No previous loop points saved.
+            if (!File.Exists(loopFile))
+            {
+                File.WriteAllText(loopFile, $"{startSample}\n{endSample}");
+                return true;
+            }
+
+            // Compare previously saved loop points to current ones.
+            string[] loopLines = File.ReadAllLines(loopFile);
+
+            int prevStart = int.Parse(loopLines[0]);
+            int prevEnd = int.Parse(loopLines[1]);
+
+            // Loop points have changed.
+            if (prevStart != startSample || prevEnd != endSample)
+            {
+                Output.Log(LogLevel.DEBUG, $"{Path.GetFileName(inputFile)}: Loop points have changed. Re-encoding...");
+                File.WriteAllText(loopFile, $"{startSample}\n{endSample}");
+                return true;
+            }
+
+            // Loop points are the same.
+            else
+            {
+                Output.Log(LogLevel.DEBUG, $"{Path.GetFileName(inputFile)}: Loop points have not changed.");
+                return false;
             }
         }
     }
