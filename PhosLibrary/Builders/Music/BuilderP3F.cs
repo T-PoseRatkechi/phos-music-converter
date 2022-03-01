@@ -51,13 +51,12 @@ namespace PhosLibrary.Builders.Music
         protected override bool RequiresEncoding(string inputFile, string outFile, int startSample, int endSample)
         {
             // Check if input file has changed since last encoding.
-            if (base.RequiresEncoding(inputFile, outFile, startSample, endSample))
-            {
-                return true;
-            }
+            var inputFileChanged = base.RequiresEncoding(inputFile, outFile, startSample, endSample);
 
             // Check if loop points have changed.
-            return this.HasLoopChanged(inputFile, startSample, endSample);
+            var loopChanged = this.HasLoopChanged(inputFile, startSample, endSample);
+
+            return inputFileChanged || loopChanged;
         }
 
         /// <inheritdoc/>
