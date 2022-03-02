@@ -10,15 +10,15 @@ namespace PhosLibrary.Builders.Music
     using PhosLibrary.Common.Logging;
 
     /// <summary>
-    /// Music Builder for Persona 3 FES and Persona 4.
+    /// Music Builder for Persona 3 Portable
     /// </summary>
-    internal class BuilderP3F : BuilderADX
+    internal class BuilderP3P : BuilderADX
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BuilderP3F"/> class.
+        /// Initializes a new instance of the <see cref="BuilderP3P"/> class.
         /// </summary>
-        public BuilderP3F()
-            : base("Persona 3 FES/Persona 4", 48000)
+        public BuilderP3P()
+            : base("Persona 3 Portable", 41000)
         {
         }
     }

@@ -16,13 +16,19 @@
       "name": "Persona 3 FES",
       "flag": "p3f",
       "encodedFormat": ".adx",
-      "supportedFiletypes": [".wav"]
+      "supportedFiletypes": [ ".wav" ]
     },
     {
       "name": "Persona 4",
       "flag": "p4",
       "encodedFormat": ".adx",
-      "supportedFiletypes": [".wav"]
+      "supportedFiletypes": [ ".wav" ]
+    },
+    {
+      "name": "Persona 3 Portable",
+      "flag": "p3p",
+      "encodedFormat": ".adx",
+      "supportedFiletypes": [ ".wav" ]
     },
     {
       "name": "Kingdom Hearts 3",
